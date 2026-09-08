@@ -2,7 +2,10 @@ import {useEffect, type PropsWithChildren} from 'react';
 import {Provider} from 'react-redux';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
-import {getAppDependencies} from '@app/dependencies';
+import {
+  getAppDependencies,
+  initializeLocalPersistence,
+} from '@app/dependencies';
 import {setAuthStatus} from '@features/auth/slice/authSlice';
 import {store} from '@store/index';
 import {useAppDispatch, useAppSelector} from '@store/hooks';
@@ -12,8 +15,17 @@ function AuthBootstrap({children}: PropsWithChildren) {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    // Initialize Firebase infrastructure once. Auth session hydration lands with auth UI.
     getAppDependencies();
+
+    const bootstrapLocalDb = () => {
+      initializeLocalPersistence().catch(error => {
+        console.error('[database] Failed to initialize local SQLite.', error);
+      });
+    };
+
+    bootstrapLocalDb();
+
+    // Auth session hydration lands with the authentication feature.
     dispatch(setAuthStatus('unauthenticated'));
   }, [dispatch]);
 

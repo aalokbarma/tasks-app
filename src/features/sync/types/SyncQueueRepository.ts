@@ -10,5 +10,7 @@ export interface SyncQueueRepository {
   listPending(limit: number): Promise<SyncQueueItem[]>;
   markAttempt(id: UniqueId, errorMessage: string | null): Promise<void>;
   remove(id: UniqueId): Promise<void>;
+  /** Removes queue rows after successful remote sync. */
+  markSynchronized(ids: readonly UniqueId[]): Promise<void>;
   countPending(): Promise<number>;
 }

@@ -1,6 +1,7 @@
+import {migration001InitialSchema} from './001_initial_schema';
 import type {Migration} from './types';
 
 /**
- * Migration list is intentionally empty until schema implementation lands.
+ * Ordered migrations. Append new versions; never edit applied migrations in place.
  */
-export const migrations: readonly Migration[] = [];
+export const migrations: readonly Migration[] = [migration001InitialSchema];

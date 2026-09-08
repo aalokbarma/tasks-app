@@ -2,7 +2,20 @@ export type AppEnvironment = 'development' | 'staging' | 'production';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
-export type SyncStatus = 'synced' | 'pending' | 'conflict' | 'error';
+/**
+ * Local change tracking for offline-first sync.
+ * - synced: matches remote
+ * - created: local create not yet pushed
+ * - updated: local update not yet pushed
+ * - deleted: local soft-delete not yet pushed
+ * - pending: queued/generic pending state
+ */
+export type SyncStatus =
+  | 'synced'
+  | 'created'
+  | 'updated'
+  | 'deleted'
+  | 'pending';
 
 export type SyncOperation = 'create' | 'update' | 'delete';
 

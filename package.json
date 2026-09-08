@@ -36,6 +36,8 @@
     "react-native": "0.87.1",
     "react-native-config": "^1.5.5",
     "react-native-gesture-handler": "2.32.0",
+    "react-native-nitro-modules": "0.37.1",
+    "react-native-nitro-sqlite": "9.7.0",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "^4.27.0",
     "react-redux": "^9.3.0",

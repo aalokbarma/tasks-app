@@ -1,7 +1,15 @@
 import type {AuthService} from '@features/auth/types';
 import type {PushNotificationService} from '@features/notifications/types';
 import type {TaskRemoteDataSource} from '@features/tasks/services/TaskRemoteDataSource';
+import type {TaskRepository} from '@features/tasks/repositories/TaskRepository';
+import type {SyncQueueRepository} from '@features/sync/types';
 
+import {
+  createSqliteSyncQueueRepository,
+  createSqliteTaskRepository,
+  initializeDatabase,
+  type DatabaseClient,
+} from '@database/index';
 import {
   createFirebaseAuthService,
   createFirebaseMessagingService,
@@ -14,7 +22,7 @@ import {
 
 /**
  * Dependency composition root for infrastructure adapters.
- * Feature modules should consume these interfaces — never Firebase SDKs directly.
+ * Feature modules should consume these interfaces — never Firebase/SQLite SDKs directly.
  */
 export interface AppDependencies {
   readonly ready: boolean;
@@ -23,22 +31,36 @@ export interface AppDependencies {
   readonly firestoreService: FirestoreService;
   readonly taskRemoteDataSource: TaskRemoteDataSource;
   readonly pushNotificationService: PushNotificationService;
+  readonly database: DatabaseClient | null;
+  readonly taskRepository: TaskRepository | null;
+  readonly syncQueueRepository: SyncQueueRepository | null;
 }
 
 let dependencies: AppDependencies | null = null;
 
-export function createAppDependencies(): AppDependencies {
+function createBaseDependencies(
+  database: DatabaseClient | null,
+): AppDependencies {
   const firebaseApp = initializeFirebaseApp();
   const firestoreService = createFirestoreService();
 
   return {
-    ready: firebaseApp.ready,
+    ready: firebaseApp.ready && database !== null,
     firebaseApp,
     authService: createFirebaseAuthService(),
     firestoreService,
     taskRemoteDataSource: createFirestoreTaskRemoteDataSource(firestoreService),
     pushNotificationService: createFirebaseMessagingService(),
+    database,
+    taskRepository: database ? createSqliteTaskRepository(database) : null,
+    syncQueueRepository: database
+      ? createSqliteSyncQueueRepository(database)
+      : null,
   };
+}
+
+export function createAppDependencies(): AppDependencies {
+  return createBaseDependencies(null);
 }
 
 export function getAppDependencies(): AppDependencies {
@@ -46,6 +68,16 @@ export function getAppDependencies(): AppDependencies {
     dependencies = createAppDependencies();
   }
 
+  return dependencies;
+}
+
+/**
+ * Opens SQLite, runs migrations, and registers local repositories.
+ * Safe to call repeatedly.
+ */
+export async function initializeLocalPersistence(): Promise<AppDependencies> {
+  const database = await initializeDatabase();
+  dependencies = createBaseDependencies(database);
   return dependencies;
 }
 

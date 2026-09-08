@@ -1,9 +1,17 @@
+import type {SQLiteValue} from 'react-native-nitro-sqlite';
+
 /**
- * SQLite schema contracts.
- * Concrete migrations and SQL will be added with database implementation.
+ * SQLite row contracts (snake_case columns).
  */
 
 export const SCHEMA_VERSION = 1;
+
+export type TaskSyncStatusColumn =
+  | 'synced'
+  | 'created'
+  | 'updated'
+  | 'deleted'
+  | 'pending';
 
 export interface TaskRow {
   id: string;
@@ -16,7 +24,8 @@ export interface TaskRow {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  sync_status: string;
+  sync_status: TaskSyncStatusColumn;
+  [key: string]: SQLiteValue;
 }
 
 export interface SyncQueueRow {
@@ -28,4 +37,12 @@ export interface SyncQueueRow {
   attempts: number;
   last_error: string | null;
   created_at: string;
+  [key: string]: SQLiteValue;
+}
+
+export interface SchemaMigrationRow {
+  version: number;
+  name: string;
+  applied_at: string;
+  [key: string]: SQLiteValue;
 }
