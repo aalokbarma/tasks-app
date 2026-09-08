@@ -14,7 +14,7 @@ export function createNavigationTheme(theme: AppTheme): NavigationTheme {
       card: theme.colors.surface,
       text: theme.colors.textPrimary,
       border: theme.colors.border,
-      notification: theme.colors.warning,
+      notification: theme.colors.danger,
     },
     fonts: {
       regular: {

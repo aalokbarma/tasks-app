@@ -41,10 +41,10 @@ export function Button({
           : 'transparent';
 
   const textColor =
-    variant === 'danger'
-      ? '#FFFFFF'
-      : variant === 'primary'
-        ? theme.colors.primaryContrast
+    variant === 'primary'
+      ? theme.colors.textOnPrimary
+      : variant === 'danger'
+        ? theme.colors.textOnDanger
         : variant === 'ghost'
           ? theme.colors.primary
           : theme.colors.textPrimary;
@@ -65,6 +65,7 @@ export function Button({
         {
           backgroundColor,
           borderColor,
+          borderRadius: theme.radii.md,
           opacity: isDisabled ? 0.55 : pressed ? 0.88 : 1,
         },
       ]}>
@@ -73,9 +74,8 @@ export function Button({
       ) : (
         <Text
           style={[
-            styles.label,
-            theme.typography.body,
-            {color: textColor},
+            theme.typography.button,
+            {color: textColor, textAlign: 'center'},
           ]}>
           {label}
         </Text>
@@ -87,14 +87,9 @@ export function Button({
 const styles = StyleSheet.create({
   button: {
     minHeight: 52,
-    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
-  },
-  label: {
-    textAlign: 'center',
-    fontWeight: '600',
   },
 });

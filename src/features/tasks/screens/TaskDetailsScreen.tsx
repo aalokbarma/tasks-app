@@ -158,7 +158,11 @@ export function TaskDetailsScreen() {
             {
               backgroundColor: theme.colors.surface,
               borderColor: theme.colors.border,
+              borderRadius: theme.radii.xl,
+              padding: theme.spacing.md + 2,
+              gap: theme.spacing.compact,
             },
+            theme.shadows.sm,
           ]}>
           <Text
             accessibilityRole="header"
@@ -285,9 +289,6 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1,
-    borderRadius: 16,
-    padding: 18,
-    gap: 12,
   },
   title: {
     marginBottom: 0,

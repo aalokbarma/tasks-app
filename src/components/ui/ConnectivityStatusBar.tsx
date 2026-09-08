@@ -4,6 +4,7 @@ import {useConnectivityPresentation} from '@features/network/hooks/useConnectivi
 import {clearSyncFailure} from '@features/sync/slice/syncSlice';
 import {runSynchronization} from '@features/sync/slice/syncThunks';
 import {useAppDispatch} from '@store/hooks';
+import type {AppTheme} from '@theme/createTheme';
 import {useTheme} from '@theme/ThemeProvider';
 
 /**
@@ -19,7 +20,7 @@ export function ConnectivityStatusBar() {
     return null;
   }
 
-  const palette = resolvePalette(presentation.kind, theme.mode);
+  const palette = resolveStatusPalette(presentation.kind, theme);
 
   const onPress = () => {
     if (presentation.kind === 'failed' || presentation.kind === 'pending') {
@@ -38,9 +39,11 @@ export function ConnectivityStatusBar() {
         {
           backgroundColor: palette.background,
           borderBottomColor: palette.border,
+          paddingHorizontal: theme.spacing.md,
+          paddingVertical: theme.spacing.sm,
         },
       ]}>
-      <View style={styles.row}>
+      <View style={[styles.row, {gap: theme.spacing.sm}]}>
         {presentation.kind === 'syncing' ? (
           <ActivityIndicator
             size="small"
@@ -48,23 +51,29 @@ export function ConnectivityStatusBar() {
             style={styles.spinner}
           />
         ) : (
-          <View style={[styles.dot, {backgroundColor: palette.dot}]} />
+          <View
+            style={[
+              styles.dot,
+              {
+                backgroundColor: palette.dot,
+                borderRadius: theme.radii.full,
+              },
+            ]}
+          />
         )}
         <Text
           numberOfLines={2}
           style={[
-            styles.text,
             theme.typography.caption,
-            {color: palette.text},
+            {color: palette.text, flexShrink: 1, textAlign: 'center', fontWeight: '500'},
           ]}>
           {presentation.message}
         </Text>
         {presentation.canRetry ? (
           <Text
             style={[
-              styles.action,
               theme.typography.caption,
-              {color: palette.text},
+              {color: palette.text, fontWeight: '700'},
             ]}>
             Retry
           </Text>
@@ -90,40 +99,40 @@ export function ConnectivityStatusBar() {
 /** @deprecated Prefer ConnectivityStatusBar — kept for import compatibility. */
 export const OfflineBanner = ConnectivityStatusBar;
 
-function resolvePalette(
+function resolveStatusPalette(
   kind: 'offline' | 'syncing' | 'pending' | 'failed',
-  mode: 'light' | 'dark',
+  theme: AppTheme,
 ): {background: string; border: string; text: string; dot: string} {
-  const dark = mode === 'dark';
+  const {colors} = theme;
 
   switch (kind) {
     case 'offline':
       return {
-        background: dark ? 'rgba(168,162,158,0.12)' : '#F5F5F4',
-        border: dark ? '#44403C' : '#E7E5E4',
-        text: dark ? '#D6D3D1' : '#57534E',
-        dot: dark ? '#A8A29E' : '#78716C',
+        background: colors.statusOfflineBackground,
+        border: colors.statusOfflineBorder,
+        text: colors.statusOfflineText,
+        dot: colors.statusOfflineDot,
       };
     case 'syncing':
       return {
-        background: dark ? 'rgba(45,212,191,0.12)' : '#F0FDFA',
-        border: dark ? '#115E59' : '#99F6E4',
-        text: dark ? '#5EEAD4' : '#0F766E',
-        dot: dark ? '#2DD4BF' : '#0F766E',
+        background: colors.statusInfoBackground,
+        border: colors.statusInfoBorder,
+        text: colors.statusInfoText,
+        dot: colors.statusInfoDot,
       };
     case 'pending':
       return {
-        background: dark ? 'rgba(45,212,191,0.08)' : '#F8FAFC',
-        border: dark ? '#334155' : '#E2E8F0',
-        text: dark ? '#94A3B8' : '#64748B',
-        dot: dark ? '#2DD4BF' : '#0F766E',
+        background: colors.statusPendingBackground,
+        border: colors.statusPendingBorder,
+        text: colors.statusPendingText,
+        dot: colors.statusPendingDot,
       };
     case 'failed':
       return {
-        background: dark ? 'rgba(251,146,60,0.14)' : '#FFF7ED',
-        border: dark ? '#9A3412' : '#FED7AA',
-        text: dark ? '#FB923C' : '#C2410C',
-        dot: dark ? '#FB923C' : '#EA580C',
+        background: colors.statusWarningBackground,
+        border: colors.statusWarningBorder,
+        text: colors.statusWarningText,
+        dot: colors.statusWarningDot,
       };
   }
 }
@@ -131,14 +140,11 @@ function resolvePalette(
 const styles = StyleSheet.create({
   banner: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
   spinner: {
     transform: [{scale: 0.85}],
@@ -146,14 +152,5 @@ const styles = StyleSheet.create({
   dot: {
     width: 6,
     height: 6,
-    borderRadius: 3,
-  },
-  text: {
-    flexShrink: 1,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  action: {
-    fontWeight: '700',
   },
 });

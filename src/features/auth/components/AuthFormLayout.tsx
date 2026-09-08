@@ -48,8 +48,11 @@ export function AuthFormLayout({
               accessibilityRole="header"
               style={[
                 styles.brand,
-                theme.typography.caption,
-                {color: theme.colors.primary},
+                theme.typography.overline,
+                {
+                  color: theme.colors.primary,
+                  textTransform: 'uppercase',
+                },
               ]}>
               TasksApp
             </Text>
@@ -117,10 +120,7 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   brand: {
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
     marginBottom: 12,
-    fontWeight: '700',
   },
   title: {
     marginBottom: 8,

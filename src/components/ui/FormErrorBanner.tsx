@@ -24,14 +24,16 @@ export function FormErrorBanner({
       accessibilityLiveRegion="polite"
       style={[
         styles.banner,
-        theme.mode === 'dark' ? styles.bannerDark : styles.bannerLight,
-        {borderColor: theme.colors.danger},
+        {
+          backgroundColor: theme.colors.dangerMuted,
+          borderColor: theme.colors.danger,
+          borderRadius: theme.radii.md,
+        },
       ]}>
       <Text
         style={[
-          styles.message,
           theme.typography.caption,
-          {color: theme.colors.danger},
+          {color: theme.colors.danger, fontWeight: '500'},
         ]}>
         {message}
       </Text>
@@ -42,17 +44,7 @@ export function FormErrorBanner({
 const styles = StyleSheet.create({
   banner: {
     borderWidth: 1,
-    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
-  },
-  bannerLight: {
-    backgroundColor: '#FEF2F2',
-  },
-  bannerDark: {
-    backgroundColor: 'rgba(248,113,113,0.16)',
-  },
-  message: {
-    fontWeight: '500',
   },
 });

@@ -12,12 +12,21 @@ export function SplashScreen() {
     <View
       accessibilityLabel="Restoring your session"
       accessibilityRole="progressbar"
-      style={[styles.root, {backgroundColor: theme.colors.background}]}>
+      style={[
+        styles.root,
+        {
+          backgroundColor: theme.colors.background,
+          gap: theme.spacing.md,
+          paddingHorizontal: theme.spacing.lg,
+        },
+      ]}>
       <Text
         style={[
-          styles.brand,
-          theme.typography.caption,
-          {color: theme.colors.primary},
+          theme.typography.overline,
+          {
+            color: theme.colors.primary,
+            textTransform: 'uppercase',
+          },
         ]}>
         TasksApp
       </Text>
@@ -27,9 +36,8 @@ export function SplashScreen() {
       />
       <Text
         style={[
-          styles.caption,
           theme.typography.caption,
-          {color: theme.colors.textSecondary},
+          {color: theme.colors.textSecondary, textAlign: 'center'},
         ]}>
         Restoring your session…
       </Text>
@@ -42,15 +50,5 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 16,
-    paddingHorizontal: 24,
-  },
-  brand: {
-    letterSpacing: 1.4,
-    textTransform: 'uppercase',
-    fontWeight: '700',
-  },
-  caption: {
-    textAlign: 'center',
   },
 });

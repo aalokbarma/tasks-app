@@ -15,12 +15,18 @@ import {
 } from '@store/bootstrap';
 import {useAppDispatch, useAppSelector} from '@store/hooks';
 import {selectThemeMode} from '@store/selectors';
-import {ThemeProvider} from '@theme/ThemeProvider';
+import {ThemeProvider, useTheme} from '@theme/ThemeProvider';
 
 function PersistLoading() {
+  const {theme} = useTheme();
+
   return (
-    <View style={styles.loading}>
-      <ActivityIndicator />
+    <View
+      style={[
+        styles.loading,
+        {backgroundColor: theme.colors.background},
+      ]}>
+      <ActivityIndicator color={theme.colors.primary} />
     </View>
   );
 }
@@ -60,21 +66,19 @@ function AppBootstrap({children}: PropsWithChildren) {
 function ThemedTree({children}: PropsWithChildren) {
   const themeMode = useAppSelector(selectThemeMode);
 
-  return (
-    <ThemeProvider themeMode={themeMode}>
-      <AppBootstrap>{children}</AppBootstrap>
-    </ThemeProvider>
-  );
+  return <ThemeProvider themeMode={themeMode}>{children}</ThemeProvider>;
 }
 
 export function AppProviders({children}: PropsWithChildren) {
   return (
     <Provider store={store}>
-      <PersistGate loading={<PersistLoading />} persistor={persistor}>
-        <SafeAreaProvider>
-          <ThemedTree>{children}</ThemedTree>
-        </SafeAreaProvider>
-      </PersistGate>
+      <SafeAreaProvider>
+        <ThemedTree>
+          <PersistGate loading={<PersistLoading />} persistor={persistor}>
+            <AppBootstrap>{children}</AppBootstrap>
+          </PersistGate>
+        </ThemedTree>
+      </SafeAreaProvider>
     </Provider>
   );
 }

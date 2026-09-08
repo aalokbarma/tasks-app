@@ -17,28 +17,25 @@ export function ScreenPlaceholder({
     <View
       style={[
         styles.container,
-        {backgroundColor: theme.colors.background},
+        {
+          backgroundColor: theme.colors.background,
+          paddingHorizontal: theme.spacing.lg,
+        },
       ]}>
       <Text
         style={[
-          styles.title,
+          theme.typography.title,
           {
             color: theme.colors.textPrimary,
-            fontSize: theme.typography.title.fontSize,
-            lineHeight: theme.typography.title.lineHeight,
-            fontWeight: theme.typography.title.fontWeight,
+            marginBottom: theme.spacing.sm,
           },
         ]}>
         {title}
       </Text>
       <Text
         style={[
-          styles.description,
-          {
-            color: theme.colors.textSecondary,
-            fontSize: theme.typography.body.fontSize,
-            lineHeight: theme.typography.body.lineHeight,
-          },
+          theme.typography.body,
+          {color: theme.colors.textSecondary},
         ]}>
         {description}
       </Text>
@@ -50,10 +47,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
   },
-  title: {
-    marginBottom: 8,
-  },
-  description: {},
 });

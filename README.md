@@ -21,11 +21,18 @@ UI (screens/components)
 - **Auth** uses an `AuthRepository` port (Firebase adapter underneath). Screens never import Firebase.
 - **SyncManager** watches NetInfo; when connectivity returns it pushes the durable outbox, pulls remote tasks, and reconciles without wiping dirty local rows.
 - **Notifications** live in services (`LocalNotificationService`, `TaskReminderCoordinator`, FCM handlers) — screens never call Notifee/FCM directly.
+- **Theme** uses centralized tokens (`colors`, `typography`, `spacing`, `radii`, `shadows`) via `ThemeProvider` / `useTheme`. Preference (`light` | `dark` | `system`) lives in Redux and is persisted; default is **system**.
 - **Redux slices**: `auth`, `tasks`, `network`, `theme`, `sync`.
 - **redux-persist** whitelists only `auth.rememberedEmail` and `theme.mode`.
 - Task queries and Firestore paths are always scoped by the signed-in `userId`.
 
-### Local task reminders (Notifee)
+### Theme
+
+- Tokens: `src/theme/` (`colors`, `typography`, `spacing`, `radii`, `shadows`, `createTheme`).
+- Preference UI: Settings → Appearance (System / Light / Dark).
+- Components consume `theme.colors.*` — no scattered hex outside the token files.
+- React Navigation theme is derived from `AppTheme` (`navigationTheme.ts`).
+
 
 When creating/editing a task with **Remind on due date** enabled:
 

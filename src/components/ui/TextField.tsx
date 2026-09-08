@@ -61,6 +61,7 @@ export function TextField({
           {
             backgroundColor: theme.colors.surface,
             borderColor,
+            borderRadius: theme.radii.md,
           },
         ]}>
         <TextInput
@@ -68,7 +69,7 @@ export function TextField({
           value={value}
           onChangeText={onChangeText}
           editable={editable}
-          placeholderTextColor={theme.colors.textSecondary}
+          placeholderTextColor={theme.colors.textTertiary}
           accessibilityLabel={accessibilityLabel ?? label}
           onFocus={event => {
             setFocused(true);
@@ -162,7 +163,6 @@ const styles = StyleSheet.create({
   inputRow: {
     minHeight: 52,
     borderWidth: 1,
-    borderRadius: 12,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',

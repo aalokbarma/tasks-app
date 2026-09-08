@@ -80,6 +80,7 @@ export function TaskFormFields({
           {
             borderColor: theme.colors.border,
             backgroundColor: theme.colors.surface,
+            borderRadius: theme.radii.md,
             opacity: !reminderEnabled || !editable ? 0.55 : 1,
           },
         ]}>
@@ -87,6 +88,7 @@ export function TaskFormFields({
           style={[
             styles.checkbox,
             {
+              borderRadius: theme.radii.xs + 2,
               borderColor: values.remindOnDueDate
                 ? theme.colors.primary
                 : theme.colors.border,
@@ -99,7 +101,7 @@ export function TaskFormFields({
             <Text
               style={[
                 styles.checkmark,
-                {color: theme.colors.primaryContrast},
+                {color: theme.colors.textOnPrimary},
               ]}>
               ✓
             </Text>
@@ -146,7 +148,6 @@ const styles = StyleSheet.create({
   },
   reminderRow: {
     borderWidth: 1,
-    borderRadius: 12,
     padding: 14,
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -155,7 +156,6 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 24,
     height: 24,
-    borderRadius: 6,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',

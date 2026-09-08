@@ -19,25 +19,43 @@ export function EmptyState({
   const {theme} = useTheme();
 
   return (
-    <View style={styles.root} accessibilityRole="summary">
+    <View
+      style={[
+        styles.root,
+        {
+          paddingHorizontal: theme.spacing.xl,
+          paddingVertical: theme.spacing.xxl,
+        },
+      ]}
+      accessibilityRole="summary">
       <Text
         style={[
-          styles.title,
           theme.typography.title,
-          {color: theme.colors.textPrimary},
+          {
+            color: theme.colors.textPrimary,
+            textAlign: 'center',
+            marginBottom: theme.spacing.sm,
+          },
         ]}>
         {title}
       </Text>
       <Text
         style={[
-          styles.description,
           theme.typography.body,
-          {color: theme.colors.textSecondary},
+          {
+            color: theme.colors.textSecondary,
+            textAlign: 'center',
+            maxWidth: 320,
+          },
         ]}>
         {description}
       </Text>
       {actionLabel && onActionPress ? (
-        <View style={styles.action}>
+        <View
+          style={[
+            styles.action,
+            {marginTop: theme.spacing.lg, maxWidth: 280},
+          ]}>
           <Button label={actionLabel} onPress={onActionPress} />
         </View>
       ) : null}
@@ -50,20 +68,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
-    paddingVertical: 48,
-  },
-  title: {
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  description: {
-    textAlign: 'center',
-    maxWidth: 320,
   },
   action: {
-    marginTop: 24,
     alignSelf: 'stretch',
-    maxWidth: 280,
   },
 });

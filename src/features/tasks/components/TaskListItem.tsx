@@ -32,8 +32,11 @@ function TaskListItemComponent({
         {
           backgroundColor: theme.colors.surface,
           borderColor: theme.colors.border,
+          borderRadius: theme.radii.lg,
+          marginHorizontal: theme.spacing.md,
           opacity: pressed ? 0.92 : 1,
         },
+        theme.shadows.sm,
       ]}>
       <Pressable
         accessibilityRole="checkbox"
@@ -45,6 +48,7 @@ function TaskListItemComponent({
         onPress={() => onToggleCompleted(task.id)}
         style={[
           styles.checkbox,
+          {borderRadius: theme.radii.sm},
           task.completed
             ? {
                 borderColor: theme.colors.primary,
@@ -54,7 +58,7 @@ function TaskListItemComponent({
         ]}>
         {task.completed ? (
           <Text
-            style={[styles.checkmark, {color: theme.colors.primaryContrast}]}>
+            style={[styles.checkmark, {color: theme.colors.textOnPrimary}]}>
             ✓
           </Text>
         ) : null}
@@ -124,9 +128,7 @@ export const TaskListItem = memo(TaskListItemComponent, propsAreEqual);
 const styles = StyleSheet.create({
   row: {
     height: TASK_ROW_HEIGHT,
-    marginHorizontal: 16,
     marginBottom: 10,
-    borderRadius: 14,
     borderWidth: 1,
     paddingHorizontal: 14,
     flexDirection: 'row',
@@ -136,7 +138,6 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 28,
     height: 28,
-    borderRadius: 8,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',

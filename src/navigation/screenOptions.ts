@@ -7,7 +7,7 @@ export function createDefaultStackOptions(
 ): NativeStackNavigationOptions {
   return {
     headerStyle: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: theme.colors.surfaceElevated,
     },
     headerTintColor: theme.colors.primary,
     headerTitleStyle: {

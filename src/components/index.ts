@@ -7,3 +7,4 @@ export {FormErrorBanner} from './ui/FormErrorBanner';
 export {HeaderTextButton} from './ui/HeaderTextButton';
 export {OfflineBanner} from './ui/OfflineBanner';
 export {PasswordField, TextField} from './ui/TextField';
+export {ThemeModeSelector} from './ui/ThemeModeSelector';
