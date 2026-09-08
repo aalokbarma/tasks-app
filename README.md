@@ -36,7 +36,7 @@ src/
   database/       # SQLite client, schema, repository adapters
   features/       # auth, tasks, sync, notifications, settings
   hooks/          # Shared typed Redux hooks
-  navigation/     # AuthStack, AppStack, RootNavigator
+  navigation/     # RootNavigator, AuthNavigator, AppNavigator, Splash
   services/       # Firebase, network, notifications, storage adapters
   store/          # Redux Toolkit store
   theme/          # Light/dark design tokens + ThemeProvider

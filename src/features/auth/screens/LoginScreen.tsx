@@ -11,11 +11,11 @@ import {
   validateLoginForm,
   type LoginFormErrors,
 } from '@features/auth/utils/validateAuthForm';
-import type {AuthStackNavigationProp} from '@navigation/types';
+import type {AuthNavigationProp} from '@navigation/types';
 import {signInWithEmail} from '@features/auth/slice/authThunks';
 
 export function LoginScreen() {
-  const navigation = useNavigation<AuthStackNavigationProp<'Login'>>();
+  const navigation = useNavigation<AuthNavigationProp<'Login'>>();
   const {
     rememberedEmail,
     isAuthenticating,
@@ -88,7 +88,7 @@ export function LoginScreen() {
       footerPrompt="Don't have an account?"
       footerActionLabel="Create account"
       footerDisabled={busy}
-      onFooterPress={() => navigation.navigate('SignUp')}>
+      onFooterPress={() => navigation.navigate('Signup')}>
       <FormErrorBanner
         message={errorMessage}
         accessibilityLabel="Sign in error"

@@ -1,12 +1,15 @@
 import {ScreenContainer} from '@components/layout/ScreenContainer';
 import {ScreenPlaceholder} from '@components/ui/ScreenPlaceholder';
 
-export function TaskFormScreen() {
+/**
+ * Placeholder — full create-task form ships in the tasks UI phase.
+ */
+export function CreateTaskScreen() {
   return (
     <ScreenContainer>
       <ScreenPlaceholder
-        title="Task form"
-        description="Create/edit task UI will be implemented in a later phase."
+        title="New task"
+        description="Create task UI will be implemented in a later phase."
       />
     </ScreenContainer>
   );

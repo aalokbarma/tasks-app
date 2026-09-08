@@ -11,11 +11,11 @@ import {
   validateSignUpForm,
   type SignUpFormErrors,
 } from '@features/auth/utils/validateAuthForm';
-import type {AuthStackNavigationProp} from '@navigation/types';
+import type {AuthNavigationProp} from '@navigation/types';
 import {signUpWithEmail} from '@features/auth/slice/authThunks';
 
 export function SignUpScreen() {
-  const navigation = useNavigation<AuthStackNavigationProp<'SignUp'>>();
+  const navigation = useNavigation<AuthNavigationProp<'Signup'>>();
   const {isAuthenticating, errorMessage, clearError, signUp} =
     useAuthController();
 
