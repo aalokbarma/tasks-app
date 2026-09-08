@@ -2,6 +2,7 @@ import {useEffect, type PropsWithChildren} from 'react';
 import {Provider} from 'react-redux';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
+import {getAppDependencies} from '@app/dependencies';
 import {setAuthStatus} from '@features/auth/slice/authSlice';
 import {store} from '@store/index';
 import {useAppDispatch, useAppSelector} from '@store/hooks';
@@ -11,7 +12,8 @@ function AuthBootstrap({children}: PropsWithChildren) {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    // Persistent Firebase Auth hydration will replace this bootstrap step.
+    // Initialize Firebase infrastructure once. Auth session hydration lands with auth UI.
+    getAppDependencies();
     dispatch(setAuthStatus('unauthenticated'));
   }, [dispatch]);
 

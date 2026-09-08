@@ -153,3 +153,14 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+// Apply only when the developer has added a real (gitignored) config file.
+def googleServicesFile = file("google-services.json")
+if (googleServicesFile.exists()) {
+    apply plugin: "com.google.gms.google-services"
+} else {
+    logger.warn(
+        "Missing android/app/google-services.json — Firebase native Android config is not applied. " +
+        "Copy your Firebase Android config before enabling Auth/Firestore/Messaging on device."
+    )
+}

@@ -155,7 +155,9 @@ npm test
 | Config | `react-native-config` |
 | IDs | `uuid` |
 
-Deferred: `@react-native-firebase/*`, `react-native-nitro-sqlite`, `@notifee/react-native`, `@react-native-community/netinfo`.
+Deferred installs (next phases): `react-native-nitro-sqlite`, `@notifee/react-native`, `@react-native-community/netinfo`.
+
+Firebase packages installed: `@react-native-firebase/app|auth|firestore|messaging` (`26.4.0`).
 
 ## Limitations
 

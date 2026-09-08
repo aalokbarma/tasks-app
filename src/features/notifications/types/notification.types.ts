@@ -23,9 +23,11 @@ export interface LocalNotificationService {
 }
 
 /**
- * Push notification contract (FCM adapter later).
+ * Push notification contract. Firebase Messaging adapter implements this.
  */
 export interface PushNotificationService {
+  requestPermission(): Promise<boolean>;
   getDeviceToken(): Promise<string | null>;
   registerTokenForUser(userId: UniqueId, token: string): Promise<void>;
+  onTokenRefresh(listener: (token: string) => void): () => void;
 }

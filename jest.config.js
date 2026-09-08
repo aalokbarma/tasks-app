@@ -15,7 +15,7 @@ module.exports = {
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-navigation|react-redux|@reduxjs|immer|uuid|react-native-config|react-native-safe-area-context|react-native-screens|react-native-gesture-handler)/)',
+    'node_modules/(?!(react-native|@react-native|@react-native-firebase|@react-navigation|react-redux|@reduxjs|immer|uuid|react-native-config|react-native-safe-area-context|react-native-screens|react-native-gesture-handler)/)',
   ],
   watchman: false,
 };
