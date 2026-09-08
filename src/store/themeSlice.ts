@@ -17,8 +17,11 @@ const themeSlice = createSlice({
     setThemeMode(state, action: PayloadAction<ThemeMode>) {
       state.mode = action.payload;
     },
+    resetThemeState() {
+      return initialState;
+    },
   },
 });
 
-export const {setThemeMode} = themeSlice.actions;
+export const {setThemeMode, resetThemeState} = themeSlice.actions;
 export const themeReducer = themeSlice.reducer;

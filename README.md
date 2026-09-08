@@ -4,7 +4,7 @@ Cross-platform task management app (React Native CLI + TypeScript) for a team-le
 
 ## Current status
 
-Scaffold + **multi-environment configuration**. Business features (Firebase Auth, SQLite, sync, notifications) are intentionally not implemented yet.
+Scaffold, multi-env config, Firebase adapters, SQLite offline persistence, and **Redux Toolkit** app state are in place. Auth/task UI, Firestore sync engine, and notifications are still upcoming.
 
 ## Architecture
 
@@ -16,7 +16,9 @@ UI (screens/components)
   → SQLite (local) / Firebase (remote adapters)
 ```
 
-- **SQLite** is the offline source of truth (to be wired next).
+- **SQLite** is the offline source of truth for tasks; Redux holds a hydrated UI cache only (not a second full DB).
+- **Redux slices**: `auth`, `tasks`, `network`, `theme`, `sync` — typed `RootState` / `AppDispatch` / `useAppDispatch` / `useAppSelector`.
+- **redux-persist** whitelists only lightweight prefs (`auth.rememberedEmail`, `theme.mode`); task lists are not persisted in Redux.
 - **Firestore** is reached only through remote data-source adapters under `services/firebase` — never from the tasks feature UI module.
 - **Auth / App stacks** are selected from Redux auth status.
 - Screens are **lazy-loaded** via `React.lazy` + `Suspense`.
@@ -151,7 +153,7 @@ npm test
 | Area | Packages |
 |------|----------|
 | Navigation | `@react-navigation/native`, `native-stack`, `screens`, `gesture-handler` (`2.32.0+`, Kotlin 2.2 fix), `safe-area-context` |
-| State | `@reduxjs/toolkit`, `react-redux` |
+| State | `@reduxjs/toolkit`, `react-redux`, `redux-persist` |
 | Config | `react-native-config` |
 | IDs | `uuid` |
 

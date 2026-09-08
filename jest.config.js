@@ -17,5 +17,6 @@ module.exports = {
   transformIgnorePatterns: [
     'node_modules/(?!(react-native|@react-native|@react-native-firebase|@react-navigation|react-redux|@reduxjs|immer|uuid|react-native-config|react-native-safe-area-context|react-native-screens|react-native-gesture-handler|react-native-nitro-sqlite|react-native-nitro-modules)/)',
   ],
+  setupFiles: ['<rootDir>/jest.setup.js'],
   watchman: false,
 };

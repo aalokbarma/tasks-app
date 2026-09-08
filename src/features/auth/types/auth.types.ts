@@ -25,5 +25,8 @@ export interface AuthState {
   status: AuthStatus;
   user: AuthUser | null;
   errorMessage: string | null;
+  /** Non-secret preference persisted for login form convenience. */
+  rememberedEmail: string | null;
+  isAuthenticating: boolean;
   lastSyncedAt: ISODateString | null;
 }

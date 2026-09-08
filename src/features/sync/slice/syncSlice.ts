@@ -1,10 +1,11 @@
 import {createSlice, type PayloadAction} from '@reduxjs/toolkit';
 
 import type {SyncState} from '@features/sync/types';
-import type {ConnectivityStatus, ISODateString} from '@app-types/common';
+import type {ISODateString} from '@app-types/common';
+
+import {refreshPendingSyncCount} from './syncThunks';
 
 const initialState: SyncState = {
-  connectivity: 'unknown',
   isSyncing: false,
   pendingCount: 0,
   lastSyncedAt: null,
@@ -15,9 +16,6 @@ const syncSlice = createSlice({
   name: 'sync',
   initialState,
   reducers: {
-    setConnectivity(state, action: PayloadAction<ConnectivityStatus>) {
-      state.connectivity = action.payload;
-    },
     setSyncing(state, action: PayloadAction<boolean>) {
       state.isSyncing = action.payload;
     },
@@ -34,10 +32,20 @@ const syncSlice = createSlice({
       return initialState;
     },
   },
+  extraReducers: builder => {
+    builder
+      .addCase(refreshPendingSyncCount.fulfilled, (state, action) => {
+        state.pendingCount = action.payload;
+        state.lastError = null;
+      })
+      .addCase(refreshPendingSyncCount.rejected, (state, action) => {
+        state.lastError =
+          action.payload ?? 'Failed to refresh pending sync count.';
+      });
+  },
 });
 
 export const {
-  setConnectivity,
   setSyncing,
   setPendingCount,
   setLastSyncedAt,

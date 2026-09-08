@@ -13,6 +13,13 @@ export {
   setTasksLoading,
   tasksReducer,
 } from './slice/tasksSlice';
+export {
+  createTask,
+  deleteTask,
+  loadTasks,
+  toggleTaskCompleted,
+  updateTask,
+} from './slice/tasksThunks';
 export type {
   CreateTaskInput,
   Task,

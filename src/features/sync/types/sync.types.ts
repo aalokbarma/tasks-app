@@ -16,8 +16,11 @@ export interface SyncQueueItem {
   createdAt: ISODateString;
 }
 
+/**
+ * Sync UI/application state only.
+ * Connectivity lives in the network slice.
+ */
 export interface SyncState {
-  connectivity: ConnectivityStatus;
   isSyncing: boolean;
   pendingCount: number;
   lastSyncedAt: ISODateString | null;
@@ -29,3 +32,6 @@ export interface SyncEngine {
   stop(): Promise<void>;
   flush(): Promise<void>;
 }
+
+// Re-export for convenience when sync UI needs network context typing.
+export type {ConnectivityStatus};

@@ -39,9 +39,15 @@ export interface TaskFilters {
   includeDeleted?: boolean;
 }
 
+/**
+ * In-memory UI projection of tasks.
+ * SQLite remains the persistent source of truth — this list is a hydrated cache.
+ */
 export interface TasksState {
   items: Task[];
   selectedTaskId: UniqueId | null;
   isLoading: boolean;
+  isSaving: boolean;
   errorMessage: string | null;
+  lastHydratedAt: ISODateString | null;
 }

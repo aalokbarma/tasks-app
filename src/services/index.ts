@@ -1,4 +1,4 @@
-export type {ConnectivityService} from './network/connectivity';
+export type {ConnectivityService, NetworkSnapshot} from './network/connectivity';
 export {createConnectivityService} from './network/connectivity';
 export {createLocalNotificationService} from './notifications/localNotifications';
 export type {KeyValueStorage} from './storage/keyValueStorage';
