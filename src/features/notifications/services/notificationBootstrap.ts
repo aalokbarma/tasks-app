@@ -4,6 +4,7 @@ import type {
   PushNotificationService,
 } from '@features/notifications/types';
 import type {TaskReminderCoordinator} from '@features/notifications/services/taskReminderCoordinator';
+import {reportError} from '@utils/errors';
 
 /**
  * Registers the device FCM token for the signed-in user and keeps it fresh.
@@ -26,7 +27,7 @@ export async function registerPushForUser(params: {
       }
     }
   } catch (error) {
-    console.error('[notifications] FCM token registration failed.', error);
+    reportError('notifications/fcm', error);
   }
 
   try {
@@ -34,11 +35,11 @@ export async function registerPushForUser(params: {
       params.push
         .registerTokenForUser(params.userId, nextToken)
         .catch(error => {
-          console.error('[notifications] FCM token refresh failed.', error);
+          reportError('notifications/fcm', error);
         });
     });
   } catch (error) {
-    console.error('[notifications] FCM token refresh subscribe failed.', error);
+    reportError('notifications/fcm', error);
     return () => undefined;
   }
 }
@@ -60,13 +61,13 @@ export async function bootstrapLocalReminders(params: {
   try {
     await params.local.requestPermission();
   } catch (error) {
-    console.error('[notifications] Local permission bootstrap failed.', error);
+    reportError('notifications/local', error);
   }
 
   try {
     const tasks = await params.loadTasks();
     await params.coordinator.rescheduleAll(tasks);
   } catch (error) {
-    console.error('[notifications] Reminder reschedule failed.', error);
+    reportError('notifications/local', error);
   }
 }

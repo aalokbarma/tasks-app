@@ -22,6 +22,7 @@ import {
   mapFirestoreDocumentToTask,
   mapTaskToFirestoreDocument,
 } from './mappers/taskMapper';
+import {FIREBASE_USER_MESSAGES} from '@utils/errors/messages';
 
 function tasksCollection(userId: UniqueId) {
   return collection(getFirestore(), 'users', userId, 'tasks');
@@ -76,7 +77,8 @@ export function createFirestoreService(): FirestoreService {
         if (task.userId !== userId) {
           throw new AppFirebaseError(
             'firestore/permission-denied',
-            'Task userId does not match the authenticated owner path.',
+            FIREBASE_USER_MESSAGES['firestore/permission-denied'] ??
+              'You do not have permission to sync this data.',
           );
         }
 

@@ -55,4 +55,13 @@ describe('SQLite task mappers', () => {
     expect(nextSyncStatusAfterLocalUpdate('updated')).toBe('updated');
     expect(nextSyncStatusAfterLocalUpdate('pending')).toBe('updated');
   });
+
+  it('rejects corrupt rows with empty titles', () => {
+    expect(() =>
+      mapTaskRowToTask({
+        ...row,
+        title: '   ',
+      }),
+    ).toThrow(/invalid/i);
+  });
 });

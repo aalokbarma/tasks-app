@@ -1,6 +1,7 @@
 import {getApp, getApps} from '@react-native-firebase/app';
 
 import {getAppConfig, isFirebaseEnvConfigured} from '@config/env';
+import {reportError, reportWarning} from '@utils/errors';
 
 export interface FirebaseAppHandle {
   readonly name: string;
@@ -51,8 +52,9 @@ export function initializeFirebaseApp(): FirebaseAppHandle {
       projectId &&
       expectedProjectId !== projectId
     ) {
-      console.warn(
-        `[firebase] Native projectId "${projectId}" does not match env FIREBASE_PROJECT_ID "${expectedProjectId}".`,
+      reportWarning(
+        'firebase',
+        `Native projectId "${projectId}" does not match env FIREBASE_PROJECT_ID "${expectedProjectId}".`,
       );
     }
 
@@ -64,7 +66,7 @@ export function initializeFirebaseApp(): FirebaseAppHandle {
 
     return cachedHandle;
   } catch (error) {
-    console.error('[firebase] Failed to initialize Firebase app.', error);
+    reportError('firebase', error);
     cachedHandle = createUnconfiguredHandle('[unavailable]');
     return cachedHandle;
   }

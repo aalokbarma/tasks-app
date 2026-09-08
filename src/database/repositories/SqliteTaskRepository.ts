@@ -7,6 +7,7 @@ import type {
 } from '@features/tasks/types';
 import {createId} from '@utils/id';
 import {toISODateString} from '@utils/date';
+import {reportError} from '@utils/errors';
 
 import type {DatabaseClient} from '../client';
 import {getDatabaseClient} from '../client';
@@ -21,6 +22,18 @@ import {enqueueTaskSyncOperation} from './SqliteSyncQueueRepository';
 
 function buildPendingPayload(task: Task): string {
   return JSON.stringify(task);
+}
+
+function mapRowsSafely(rows: TaskRow[]): Task[] {
+  const tasks: Task[] = [];
+  for (const row of rows) {
+    try {
+      tasks.push(mapTaskRowToTask(row));
+    } catch (error) {
+      reportError('database/tasks', error, {taskId: row.id});
+    }
+  }
+  return tasks;
 }
 
 async function getTaskRow(
@@ -66,12 +79,20 @@ export function createSqliteTaskRepository(
         params,
       );
 
-      return result.rows._array.map(mapTaskRowToTask);
+      return mapRowsSafely(result.rows._array);
     },
 
     async getById(userId, taskId) {
       const row = await getTaskRow(client, userId, taskId);
-      return row ? mapTaskRowToTask(row) : null;
+      if (!row) {
+        return null;
+      }
+      try {
+        return mapTaskRowToTask(row);
+      } catch (error) {
+        reportError('database/tasks', error, {taskId: row.id});
+        return null;
+      }
     },
 
     async create(userId, input: CreateTaskInput) {
@@ -302,7 +323,7 @@ export function createSqliteTaskRepository(
         [userId],
       );
 
-      return result.rows._array.map(mapTaskRowToTask);
+      return mapRowsSafely(result.rows._array);
     },
 
     async markSynchronized(userId, taskIds) {

@@ -1,5 +1,6 @@
 import type {SyncStatus} from '@app-types/common';
 import type {Task} from '@features/tasks/types';
+import {DATABASE_USER_MESSAGES} from '@utils/errors/messages';
 
 import type {TaskRow, TaskSyncStatusColumn} from '../schema';
 import {DatabaseError} from '../errors';
@@ -17,16 +18,38 @@ export function isSyncStatus(value: string): value is SyncStatus {
 }
 
 export function mapTaskRowToTask(row: TaskRow): Task {
+  if (!row.id || !row.user_id) {
+    throw new DatabaseError(
+      DATABASE_USER_MESSAGES.corrupt ??
+        'Some local data looked invalid and was skipped.',
+      undefined,
+      'corrupt',
+    );
+  }
+
+  const title = typeof row.title === 'string' ? row.title.trim() : '';
+  if (!title) {
+    throw new DatabaseError(
+      DATABASE_USER_MESSAGES.corrupt ??
+        'Some local data looked invalid and was skipped.',
+      undefined,
+      'corrupt',
+    );
+  }
+
   if (!isSyncStatus(row.sync_status)) {
     throw new DatabaseError(
-      `Invalid sync_status "${row.sync_status}" for task ${row.id}.`,
+      DATABASE_USER_MESSAGES.corrupt ??
+        'Some local data looked invalid and was skipped.',
+      undefined,
+      'corrupt',
     );
   }
 
   return {
     id: row.id,
     userId: row.user_id,
-    title: row.title,
+    title,
     description: row.description,
     completed: row.completed === 1,
     dueAt: row.due_at,

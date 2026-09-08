@@ -72,11 +72,16 @@ export function mapFirestoreDocumentToTask(
   const createdAt = toISODateString(data.createdAt) ?? new Date().toISOString();
   const updatedAt = toISODateString(data.updatedAt) ?? createdAt;
   const syncStatus: SyncStatus = 'synced';
+  const title = (asString(data.title) ?? '').trim();
+
+  if (!title) {
+    return null;
+  }
 
   return {
     id: asString(data.id) ?? snapshot.id,
     userId: asString(data.userId) ?? userId,
-    title: asString(data.title) ?? '',
+    title,
     description: asString(data.description),
     completed: asBoolean(data.completed),
     dueAt: toISODateString(data.dueAt),

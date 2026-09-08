@@ -4,6 +4,7 @@ import type {TaskRepository} from '@features/tasks/repositories/TaskRepository';
 import type {TaskRemoteDataSource} from '@features/tasks/services/TaskRemoteDataSource';
 import type {ConnectivityService} from '@services/network/connectivity';
 import {toISODateString} from '@utils/date';
+import {reportError, toSyncUserMessage} from '@utils/errors';
 
 import type {SyncEngine, SyncQueueRepository} from '../types';
 import {reconcileRemoteTasks} from './reconcileTasks';
@@ -92,7 +93,9 @@ export class SyncManager implements SyncEngine {
       this.lastStatus = next.status;
 
       if (wasOffline && next.status === 'online') {
-        this.flush().catch(() => undefined);
+        this.flush().catch(error => {
+          reportError('sync/network-transition', error);
+        });
       }
     });
 
@@ -181,9 +184,8 @@ export class SyncManager implements SyncEngine {
       this.hooks.onSyncFinished?.(result);
       return result;
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Synchronization failed.';
-      this.hooks.onSyncError?.(message);
+      reportError('sync/cycle', error);
+      this.hooks.onSyncError?.(toSyncUserMessage(error));
       throw error;
     }
   }
@@ -227,8 +229,8 @@ export class SyncManager implements SyncEngine {
         pushed += 1;
       } catch (error) {
         failed += 1;
-        const message =
-          error instanceof Error ? error.message : 'Push failed.';
+        reportError('sync/push', error, {taskId: task.id});
+        const message = toSyncUserMessage(error);
         const queueIds = attempts.getQueueIds(task.id);
 
         if (queueIds.length === 0) {
@@ -280,7 +282,8 @@ export class SyncManager implements SyncEngine {
   private async safeCountPending(): Promise<number> {
     try {
       return await this.syncQueueRepository.countPending();
-    } catch {
+    } catch (error) {
+      reportError('sync/pending-count', error);
       return 0;
     }
   }

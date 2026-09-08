@@ -1,5 +1,6 @@
 import {StatusBar} from 'react-native';
 
+import {AppErrorBoundary} from '@components/ui/AppErrorBoundary';
 import {RootNavigator} from '@navigation/RootNavigator';
 import {useTheme} from '@theme/ThemeProvider';
 
@@ -21,7 +22,9 @@ function AppChrome() {
 export default function App() {
   return (
     <AppProviders>
-      <AppChrome />
+      <AppErrorBoundary>
+        <AppChrome />
+      </AppErrorBoundary>
     </AppProviders>
   );
 }

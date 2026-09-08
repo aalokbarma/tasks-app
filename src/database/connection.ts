@@ -10,9 +10,10 @@ import {
 
 import {DATABASE_NAME} from '@config/constants';
 import {toISODateString} from '@utils/date';
+import {DATABASE_USER_MESSAGES} from '@utils/errors/messages';
 
 import type {DatabaseClient} from './client';
-import {DatabaseError} from './errors';
+import {DatabaseError, mapDatabaseError} from './errors';
 import type {Migration} from './migrations/types';
 import type {SchemaMigrationRow} from './schema';
 
@@ -36,10 +37,7 @@ export class NitroSqliteDatabaseClient implements DatabaseClient {
     try {
       this.connection = open({name: this.dbName});
     } catch (error) {
-      throw new DatabaseError(
-        `Failed to open SQLite database "${this.dbName}".`,
-        error,
-      );
+      throw mapDatabaseError(error, 'open');
     }
   }
 
@@ -51,10 +49,7 @@ export class NitroSqliteDatabaseClient implements DatabaseClient {
     try {
       this.connection.close();
     } catch (error) {
-      throw new DatabaseError(
-        `Failed to close SQLite database "${this.dbName}".`,
-        error,
-      );
+      throw mapDatabaseError(error, 'open');
     } finally {
       this.connection = null;
     }
@@ -69,7 +64,7 @@ export class NitroSqliteDatabaseClient implements DatabaseClient {
     try {
       return await connection.executeAsync<Row>(query, params);
     } catch (error) {
-      throw new DatabaseError('SQLite query failed.', error);
+      throw mapDatabaseError(error, 'query');
     }
   }
 
@@ -79,7 +74,7 @@ export class NitroSqliteDatabaseClient implements DatabaseClient {
     try {
       await connection.executeBatchAsync(commands);
     } catch (error) {
-      throw new DatabaseError('SQLite batch query failed.', error);
+      throw mapDatabaseError(error, 'write');
     }
   }
 
@@ -91,14 +86,18 @@ export class NitroSqliteDatabaseClient implements DatabaseClient {
     try {
       return await connection.transaction(callback);
     } catch (error) {
-      throw new DatabaseError('SQLite transaction failed.', error);
+      if (error instanceof DatabaseError) {
+        throw error;
+      }
+      throw mapDatabaseError(error, 'write');
     }
   }
 
   async migrate(migrationsList: readonly Migration[]): Promise<void> {
-    await this.open();
+    try {
+      await this.open();
 
-    await this.executeAsync(`
+      await this.executeAsync(`
       CREATE TABLE IF NOT EXISTS schema_migrations (
         version INTEGER PRIMARY KEY NOT NULL,
         name TEXT NOT NULL,
@@ -106,37 +105,51 @@ export class NitroSqliteDatabaseClient implements DatabaseClient {
       );
     `);
 
-    const applied = await this.executeAsync<SchemaMigrationRow>(
-      'SELECT version, name, applied_at FROM schema_migrations ORDER BY version ASC;',
-    );
-    const appliedVersions = new Set(
-      applied.rows._array.map(row => Number(row.version)),
-    );
+      const applied = await this.executeAsync<SchemaMigrationRow>(
+        'SELECT version, name, applied_at FROM schema_migrations ORDER BY version ASC;',
+      );
+      const appliedVersions = new Set(
+        applied.rows._array.map(row => Number(row.version)),
+      );
 
-    const pending = migrationsList
-      .slice()
-      .sort((a, b) => a.version - b.version)
-      .filter(migration => !appliedVersions.has(migration.version));
+      const pending = migrationsList
+        .slice()
+        .sort((a, b) => a.version - b.version)
+        .filter(migration => !appliedVersions.has(migration.version));
 
-    for (const migration of pending) {
-      await this.transaction(async tx => {
-        for (const statement of migration.statements) {
-          await tx.executeAsync(statement);
-        }
+      for (const migration of pending) {
+        await this.transaction(async tx => {
+          for (const statement of migration.statements) {
+            await tx.executeAsync(statement);
+          }
 
-        await tx.executeAsync(
-          `INSERT INTO schema_migrations (version, name, applied_at)
+          await tx.executeAsync(
+            `INSERT INTO schema_migrations (version, name, applied_at)
            VALUES (?, ?, ?);`,
-          [migration.version, migration.name, toISODateString()],
+            [migration.version, migration.name, toISODateString()],
+          );
+        });
+      }
+    } catch (error) {
+      if (error instanceof DatabaseError) {
+        throw new DatabaseError(
+          DATABASE_USER_MESSAGES.migrate ??
+            'Local storage update failed. Restart the app and try again.',
+          error,
+          'migrate',
         );
-      });
+      }
+      throw mapDatabaseError(error, 'migrate');
     }
   }
 
   private requireConnection(): NitroSQLiteConnection {
     if (!this.connection) {
       throw new DatabaseError(
-        'SQLite connection is closed. Call open() before executing queries.',
+        DATABASE_USER_MESSAGES.open ??
+          'Could not open local storage. Restart the app and try again.',
+        undefined,
+        'open',
       );
     }
 

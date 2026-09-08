@@ -29,6 +29,7 @@ import {
 } from '@features/notifications/services/notificationBootstrap';
 import {subscribeForegroundMessages} from '@services/notifications/fcmHandlers';
 import {toISODateString} from '@utils/date';
+import {reportError} from '@utils/errors';
 import type {UniqueId} from '@app-types/common';
 import {
   clearSyncManager,
@@ -97,8 +98,9 @@ export async function bootstrapAppState(dispatch: AppDispatch): Promise<void> {
 
   try {
     await dispatch(refreshPendingSyncCount());
-  } catch {
+  } catch (error) {
     // Database may still be initializing; pending count refreshes after local persistence is ready.
+    reportError('sync/pending-count', error);
   }
 
   if (!isCurrent()) {
@@ -120,7 +122,8 @@ async function bootstrapNotificationsForUser(userId: UniqueId): Promise<void> {
     loadTasks: async () => {
       try {
         return await requireTaskRepository().getAll(userId);
-      } catch {
+      } catch (error) {
+        reportError('notifications/load-tasks', error, {userId});
         return [];
       }
     },
@@ -190,7 +193,7 @@ async function ensureSyncManager(dispatch: AppDispatch): Promise<void> {
     syncManagerStarted = true;
     await manager.start();
   } catch (error) {
-    console.error('[sync] Failed to start SyncManager.', error);
+    reportError('sync', error);
   }
 }
 
@@ -213,7 +216,9 @@ function startAuthSessionObserver(dispatch: AppDispatch): void {
       stopTokenRefresh = null;
       requireLocalNotificationService()
         .cancelAll()
-        .catch(() => undefined);
+        .catch(error => {
+          reportError('notifications', error);
+        });
     }
 
     lastObservedUserId = nextUserId;
@@ -225,7 +230,7 @@ function startAuthSessionObserver(dispatch: AppDispatch): void {
         dispatch(runSynchronization());
       }
       bootstrapNotificationsForUser(nextUserId).catch(error => {
-        console.error('[notifications] User bootstrap failed.', error);
+        reportError('notifications', error);
       });
     }
   });

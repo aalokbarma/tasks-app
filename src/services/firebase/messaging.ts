@@ -25,6 +25,7 @@ import {
   ensureFirebaseReady,
   mapMessagingError,
 } from './errors';
+import {reportError} from '@utils/errors';
 
 export type FirebaseMessagingService = PushNotificationService;
 
@@ -45,7 +46,8 @@ async function requestNotificationPermission(): Promise<boolean> {
     }
 
     return notifeeOk;
-  } catch {
+  } catch (error) {
+    reportError('firebase/messaging', error);
     if (Platform.OS === 'ios') {
       const authStatus = await requestPermission(getMessaging());
       return (
@@ -77,7 +79,7 @@ export function createFirebaseMessagingService(): FirebaseMessagingService {
         return await getToken(getMessaging());
       } catch (error) {
         // Graceful: push is bonus; app works without a token.
-        console.error('[firebase/messaging] getDeviceToken failed.', error);
+        reportError('firebase/messaging', error);
         return null;
       }
     },
@@ -92,7 +94,7 @@ export function createFirebaseMessagingService(): FirebaseMessagingService {
         if (!token.trim()) {
           throw new AppFirebaseError(
             'messaging/unknown',
-            'Cannot register an empty FCM token.',
+            'Could not set up push notifications.',
           );
         }
 
@@ -114,7 +116,7 @@ export function createFirebaseMessagingService(): FirebaseMessagingService {
       try {
         ensureFirebaseReady(getFirebaseAppHandle().ready);
       } catch (error) {
-        console.error('[firebase/messaging] Token refresh unavailable.', error);
+        reportError('firebase/messaging', error);
         return () => undefined;
       }
 

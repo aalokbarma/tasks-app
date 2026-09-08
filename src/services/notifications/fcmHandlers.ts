@@ -8,6 +8,7 @@ import notifee, {AndroidImportance} from '@notifee/react-native';
 import {Platform} from 'react-native';
 
 import {TASK_REMINDERS_CHANNEL_ID} from '@features/notifications/services/taskReminderCoordinator';
+import {reportError} from '@utils/errors';
 
 const FCM_CHANNEL_ID = 'fcm-messages';
 
@@ -81,7 +82,7 @@ export async function displayRemoteMessage(
       },
     });
   } catch (error) {
-    console.error('[notifications] Failed to display remote message.', error);
+    reportError('notifications/fcm-display', error);
   }
 }
 
@@ -94,10 +95,7 @@ export function registerBackgroundMessageHandler(): void {
       await displayRemoteMessage(remoteMessage);
     });
   } catch (error) {
-    console.error(
-      '[notifications] Background message handler unavailable.',
-      error,
-    );
+    reportError('notifications/fcm-background', error);
   }
 }
 
@@ -107,10 +105,7 @@ export function subscribeForegroundMessages(): () => void {
       await displayRemoteMessage(remoteMessage);
     });
   } catch (error) {
-    console.error(
-      '[notifications] Foreground message handler unavailable.',
-      error,
-    );
+    reportError('notifications/fcm-foreground', error);
     return () => undefined;
   }
 }

@@ -21,7 +21,7 @@ describe('Firebase infrastructure', () => {
 
     expect(mapped).toBeInstanceOf(AppFirebaseError);
     expect(mapped.code).toBe('auth/wrong-password');
-    expect(mapped.message).toBe('Wrong password.');
+    expect(mapped.message).toBe('Incorrect email or password.');
   });
 
   it('maps firestore permission errors', () => {
@@ -31,6 +31,9 @@ describe('Firebase infrastructure', () => {
     });
 
     expect(mapped.code).toBe('firestore/permission-denied');
+    expect(mapped.message).toBe(
+      'You do not have permission to sync this data.',
+    );
   });
 
   it('initializes once and returns an unconfigured handle without native apps', () => {

@@ -16,6 +16,7 @@ import {
   TASK_REMINDERS_CHANNEL_ID,
   taskReminderNotificationId,
 } from '@features/notifications/services/taskReminderCoordinator';
+import {reportError} from '@utils/errors';
 
 async function ensureAndroidChannel(): Promise<void> {
   if (Platform.OS !== 'android') {
@@ -62,7 +63,7 @@ export function createLocalNotificationService(): LocalNotificationService {
       await ensureAndroidChannel();
       channelReady = true;
     } catch (error) {
-      console.error('[notifications] Failed to create Android channel.', error);
+      reportError('notifications/channel', error);
     }
   }
 
@@ -73,7 +74,7 @@ export function createLocalNotificationService(): LocalNotificationService {
         const settings = await notifee.requestPermission();
         return mapAuthorizationStatus(settings.authorizationStatus);
       } catch (error) {
-        console.error('[notifications] Permission request failed.', error);
+        reportError('notifications/permission', error);
         return {authorized: false, canRequest: false};
       }
     },
@@ -129,7 +130,9 @@ export function createLocalNotificationService(): LocalNotificationService {
           trigger,
         );
       } catch (error) {
-        console.error('[notifications] Failed to schedule reminder.', error);
+        reportError('notifications/schedule', error, {
+          taskId: reminder.taskId,
+        });
       }
     },
 
@@ -137,7 +140,7 @@ export function createLocalNotificationService(): LocalNotificationService {
       try {
         await notifee.cancelNotification(taskReminderNotificationId(taskId));
       } catch (error) {
-        console.error('[notifications] Failed to cancel reminder.', error);
+        reportError('notifications/cancel', error, {taskId});
       }
     },
 
@@ -145,7 +148,7 @@ export function createLocalNotificationService(): LocalNotificationService {
       try {
         await notifee.cancelAllNotifications();
       } catch (error) {
-        console.error('[notifications] Failed to cancel all reminders.', error);
+        reportError('notifications/cancel-all', error);
       }
     },
   };

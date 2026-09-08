@@ -5,6 +5,7 @@ import type {
   NotificationPermissionStatus,
   TaskReminder,
 } from '@features/notifications/types';
+import {reportError} from '@utils/errors';
 
 export const TASK_REMINDERS_CHANNEL_ID = 'task-reminders';
 
@@ -66,7 +67,7 @@ export function createTaskReminderCoordinator(
 
         await localNotifications.scheduleTaskReminder(reminder);
       } catch (error) {
-        console.error('[notifications] Failed to sync task reminder.', error);
+        reportError('notifications/reminder', error, {taskId: task.id});
       }
     },
 
@@ -74,7 +75,7 @@ export function createTaskReminderCoordinator(
       try {
         await localNotifications.cancelTaskReminder(taskId);
       } catch (error) {
-        console.error('[notifications] Failed to cancel task reminder.', error);
+        reportError('notifications/reminder', error, {taskId});
       }
     },
 

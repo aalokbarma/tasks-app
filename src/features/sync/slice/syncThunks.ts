@@ -1,6 +1,7 @@
 import {createAsyncThunk} from '@reduxjs/toolkit';
 
 import {requireSyncQueueRepository, requireSyncManager} from '@store/dependencies';
+import {toSyncUserMessage, toUserMessage} from '@utils/errors';
 
 export const refreshPendingSyncCount = createAsyncThunk<
   number,
@@ -10,11 +11,9 @@ export const refreshPendingSyncCount = createAsyncThunk<
   try {
     return await requireSyncQueueRepository().countPending();
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Failed to refresh pending sync count.';
-    return rejectWithValue(message);
+    return rejectWithValue(
+      toUserMessage(error, 'Failed to refresh pending sync count.'),
+    );
   }
 });
 
@@ -30,8 +29,6 @@ export const runSynchronization = createAsyncThunk<
   try {
     await requireSyncManager().flush();
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Synchronization failed.';
-    return rejectWithValue(message);
+    return rejectWithValue(toSyncUserMessage(error));
   }
 });

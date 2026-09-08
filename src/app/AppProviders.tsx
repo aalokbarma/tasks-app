@@ -16,6 +16,7 @@ import {
 import {useAppDispatch, useAppSelector} from '@store/hooks';
 import {selectThemeMode} from '@store/selectors';
 import {ThemeProvider, useTheme} from '@theme/ThemeProvider';
+import {reportError} from '@utils/errors';
 
 function PersistLoading() {
   const {theme} = useTheme();
@@ -42,7 +43,7 @@ function AppBootstrap({children}: PropsWithChildren) {
       try {
         await initializeLocalPersistence();
       } catch (error) {
-        console.error('[database] Failed to initialize local SQLite.', error);
+        reportError('database', error);
       }
 
       if (!cancelled) {
@@ -51,7 +52,7 @@ function AppBootstrap({children}: PropsWithChildren) {
     };
 
     bootstrap().catch(error => {
-      console.error('[app] Bootstrap failed.', error);
+      reportError('app', error);
     });
 
     return () => {

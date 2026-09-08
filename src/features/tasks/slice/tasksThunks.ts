@@ -15,14 +15,7 @@ import {
   requireTaskUseCases,
 } from '@store/dependencies';
 import type {RootState} from '@store/rootReducer';
-
-function toErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return fallback;
-}
+import {toUserMessage} from '@utils/errors';
 
 function requireUserId(state: RootState): UniqueId {
   const userId = state.auth.user?.uid;
@@ -43,7 +36,7 @@ export const loadTasks = createAsyncThunk<
     const tasks = await requireTaskUseCases().listTasks(userId, filters);
     return {tasks, hydratedAt: toISODateString()};
   } catch (error) {
-    return rejectWithValue(toErrorMessage(error, 'Failed to load tasks.'));
+    return rejectWithValue(toUserMessage(error, 'Failed to load tasks.'));
   }
 });
 
@@ -59,7 +52,7 @@ export const createTask = createAsyncThunk<
     await dispatch(refreshPendingSyncCount());
     return task;
   } catch (error) {
-    return rejectWithValue(toErrorMessage(error, 'Failed to create task.'));
+    return rejectWithValue(toUserMessage(error, 'Failed to create task.'));
   }
 });
 
@@ -75,7 +68,7 @@ export const updateTask = createAsyncThunk<
     await dispatch(refreshPendingSyncCount());
     return task;
   } catch (error) {
-    return rejectWithValue(toErrorMessage(error, 'Failed to update task.'));
+    return rejectWithValue(toUserMessage(error, 'Failed to update task.'));
   }
 });
 
@@ -91,7 +84,7 @@ export const deleteTask = createAsyncThunk<
     await dispatch(refreshPendingSyncCount());
     return taskId;
   } catch (error) {
-    return rejectWithValue(toErrorMessage(error, 'Failed to delete task.'));
+    return rejectWithValue(toUserMessage(error, 'Failed to delete task.'));
   }
 });
 
@@ -110,7 +103,7 @@ export const toggleTaskCompleted = createAsyncThunk<
       return task;
     } catch (error) {
       return rejectWithValue(
-        toErrorMessage(error, 'Failed to update task completion.'),
+        toUserMessage(error, 'Failed to update task completion.'),
       );
     }
   },

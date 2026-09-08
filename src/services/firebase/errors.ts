@@ -1,3 +1,6 @@
+import {FIREBASE_USER_MESSAGES} from '@utils/errors/messages';
+import {reportError} from '@utils/errors/reportError';
+
 export type FirebaseErrorCode =
   | 'unconfigured'
   | 'unavailable'
@@ -50,21 +53,12 @@ function readErrorCode(error: unknown): string | null {
   return null;
 }
 
-function readErrorMessage(error: unknown, fallback: string): string {
-  if (
-    typeof error === 'object' &&
-    error !== null &&
-    'message' in error &&
-    typeof (error as {message: unknown}).message === 'string'
-  ) {
-    return (error as {message: string}).message;
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return fallback;
+function userMessageFor(code: FirebaseErrorCode): string {
+  return (
+    FIREBASE_USER_MESSAGES[code] ??
+    FIREBASE_USER_MESSAGES.unknown ??
+    'Something went wrong. Please try again.'
+  );
 }
 
 const AUTH_CODE_MAP: Record<string, FirebaseErrorCode> = {
@@ -87,9 +81,8 @@ export function mapAuthError(error: unknown): AppFirebaseError {
 
   const rawCode = readErrorCode(error);
   const code = (rawCode && AUTH_CODE_MAP[rawCode]) || 'auth/unknown';
-  const message = readErrorMessage(error, 'Authentication request failed.');
-
-  return new AppFirebaseError(code, message, error);
+  reportError('firebase/auth', error, {code});
+  return new AppFirebaseError(code, userMessageFor(code), error);
 }
 
 export function mapFirestoreError(error: unknown): AppFirebaseError {
@@ -98,36 +91,21 @@ export function mapFirestoreError(error: unknown): AppFirebaseError {
   }
 
   const rawCode = readErrorCode(error);
+  let code: FirebaseErrorCode = 'firestore/unknown';
 
   if (rawCode === 'firestore/permission-denied') {
-    return new AppFirebaseError(
-      'firestore/permission-denied',
-      readErrorMessage(error, 'Firestore permission denied.'),
-      error,
-    );
+    code = 'firestore/permission-denied';
+  } else if (rawCode === 'firestore/not-found') {
+    code = 'firestore/not-found';
+  } else if (
+    rawCode === 'firestore/unavailable' ||
+    rawCode === 'unavailable'
+  ) {
+    code = 'firestore/unavailable';
   }
 
-  if (rawCode === 'firestore/not-found') {
-    return new AppFirebaseError(
-      'firestore/not-found',
-      readErrorMessage(error, 'Firestore document not found.'),
-      error,
-    );
-  }
-
-  if (rawCode === 'firestore/unavailable') {
-    return new AppFirebaseError(
-      'firestore/unavailable',
-      readErrorMessage(error, 'Firestore is temporarily unavailable.'),
-      error,
-    );
-  }
-
-  return new AppFirebaseError(
-    'firestore/unknown',
-    readErrorMessage(error, 'Firestore request failed.'),
-    error,
-  );
+  reportError('firebase/firestore', error, {code});
+  return new AppFirebaseError(code, userMessageFor(code), error);
 }
 
 export function mapMessagingError(error: unknown): AppFirebaseError {
@@ -136,20 +114,26 @@ export function mapMessagingError(error: unknown): AppFirebaseError {
   }
 
   const rawCode = readErrorCode(error);
-  const message = readErrorMessage(error, 'Messaging request failed.');
+  let code: FirebaseErrorCode = 'messaging/unknown';
 
-  if (rawCode === 'messaging/permission-blocked') {
-    return new AppFirebaseError('messaging/permission-denied', message, error);
+  if (
+    rawCode === 'messaging/permission-blocked' ||
+    rawCode === 'messaging/permission-denied'
+  ) {
+    code = 'messaging/permission-denied';
+  } else if (rawCode === 'messaging/unavailable') {
+    code = 'messaging/unavailable';
   }
 
-  return new AppFirebaseError('messaging/unknown', message, error);
+  reportError('firebase/messaging', error, {code});
+  return new AppFirebaseError(code, userMessageFor(code), error);
 }
 
 export function ensureFirebaseReady(isReady: boolean): void {
   if (!isReady) {
     throw new AppFirebaseError(
       'unconfigured',
-      'Firebase is not configured. Add native Firebase config files and set FIREBASE_* environment variables.',
+      userMessageFor('unconfigured'),
     );
   }
 }

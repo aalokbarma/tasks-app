@@ -6,23 +6,11 @@ import type {
   AuthUser,
   SignUpInput,
 } from '@features/auth/types';
-import {AppFirebaseError} from '@services/firebase/errors';
 import {resetSyncState} from '@features/sync/slice/syncSlice';
 import {resetTasksState} from '@features/tasks/slice/tasksSlice';
-
 import {requireAuthRepository} from '@store/dependencies';
+import {toUserMessage} from '@utils/errors';
 
-function toErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof AppFirebaseError) {
-    return error.message;
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return fallback;
-}
 
 /**
  * Clears Redux caches that belong to a signed-in user.
@@ -48,7 +36,7 @@ export const signInWithEmail = createAsyncThunk<
   try {
     return await requireAuthRepository().signIn(credentials);
   } catch (error) {
-    return rejectWithValue(toErrorMessage(error, 'Sign in failed.'));
+    return rejectWithValue(toUserMessage(error, 'Sign in failed. Please try again.'));
   }
 });
 
@@ -60,7 +48,7 @@ export const signUpWithEmail = createAsyncThunk<
   try {
     return await requireAuthRepository().signUp(input);
   } catch (error) {
-    return rejectWithValue(toErrorMessage(error, 'Sign up failed.'));
+    return rejectWithValue(toUserMessage(error, 'Sign up failed. Please try again.'));
   }
 });
 
@@ -71,7 +59,7 @@ export const signOutUser = createAsyncThunk<void, void, {rejectValue: string}>(
       await requireAuthRepository().signOut();
       clearUserScopedApplicationState(dispatch);
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, 'Sign out failed.'));
+      return rejectWithValue(toUserMessage(error, 'Sign out failed. Please try again.'));
     }
   },
 );

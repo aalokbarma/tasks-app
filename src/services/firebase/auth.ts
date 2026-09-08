@@ -52,7 +52,7 @@ async function updateDisplayNameIfNeeded(
   if (!refreshed) {
     throw new AppFirebaseError(
       'auth/unknown',
-      'Signed up successfully but the current user is unavailable.',
+      'Sign-in failed. Please try again.',
     );
   }
 
