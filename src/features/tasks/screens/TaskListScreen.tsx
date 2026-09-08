@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {
   FlatList,
   RefreshControl,
@@ -19,7 +19,10 @@ import {
   TaskListItem,
   TASK_ROW_HEIGHT,
 } from '@features/tasks/components/TaskListItem';
-import {useTasksController} from '@features/tasks/hooks/useTasksController';
+import {
+  useTasksActions,
+  useTasksListState,
+} from '@features/tasks/hooks/useTasksController';
 import {useIsOnline} from '@features/network/hooks/useNetwork';
 import {runSynchronization} from '@features/sync/slice/syncThunks';
 import type {Task} from '@features/tasks/types';
@@ -50,8 +53,8 @@ export function TaskListScreen() {
   const dispatch = useAppDispatch();
   const {theme} = useTheme();
   const isOnline = useIsOnline();
-  const {tasks, isLoading, errorMessage, refresh, toggleCompleted} =
-    useTasksController();
+  const {tasks, isLoading, errorMessage} = useTasksListState();
+  const {refresh, toggleCompleted} = useTasksActions();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
@@ -115,6 +118,41 @@ export function TaskListScreen() {
     [handleOpenTask, handleToggleCompleted],
   );
 
+  const listContentStyle = useMemo(
+    () => [
+      styles.listContent,
+      {
+        paddingTop: theme.spacing.sm + 4,
+        paddingBottom: theme.spacing.xl,
+      },
+    ],
+    [theme.spacing.sm, theme.spacing.xl],
+  );
+
+  const refreshControl = useMemo(
+    () => (
+      <RefreshControl
+        refreshing={isRefreshing}
+        onRefresh={handleRefresh}
+        tintColor={theme.colors.primary}
+        colors={[theme.colors.primary]}
+      />
+    ),
+    [handleRefresh, isRefreshing, theme.colors.primary],
+  );
+
+  const emptyComponent = useMemo(
+    () => (
+      <EmptyState
+        title="No tasks yet"
+        description="Create a task anytime — even offline. Everything is saved on this device first."
+        actionLabel="Create task"
+        onActionPress={handleCreate}
+      />
+    ),
+    [handleCreate],
+  );
+
   const showInitialLoading = isLoading && !hasLoadedOnce && tasks.length === 0;
 
   return (
@@ -145,37 +183,16 @@ export function TaskListScreen() {
             keyExtractor={keyExtractor}
             renderItem={renderItem}
             getItemLayout={getItemLayout}
-            initialNumToRender={12}
-            maxToRenderPerBatch={12}
-            windowSize={7}
+            initialNumToRender={16}
+            maxToRenderPerBatch={16}
+            updateCellsBatchingPeriod={50}
+            windowSize={9}
             removeClippedSubviews
             contentContainerStyle={
-              tasks.length === 0
-                ? styles.emptyListContent
-                : [
-                    styles.listContent,
-                    {
-                      paddingTop: theme.spacing.sm + 4,
-                      paddingBottom: theme.spacing.xl,
-                    },
-                  ]
+              tasks.length === 0 ? styles.emptyListContent : listContentStyle
             }
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={handleRefresh}
-                tintColor={theme.colors.primary}
-                colors={[theme.colors.primary]}
-              />
-            }
-            ListEmptyComponent={
-              <EmptyState
-                title="No tasks yet"
-                description="Create a task anytime — even offline. Everything is saved on this device first."
-                actionLabel="Create task"
-                onActionPress={handleCreate}
-              />
-            }
+            refreshControl={refreshControl}
+            ListEmptyComponent={emptyComponent}
           />
         )}
       </View>

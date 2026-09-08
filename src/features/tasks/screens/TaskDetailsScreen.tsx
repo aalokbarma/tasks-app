@@ -1,11 +1,5 @@
 import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {Alert, ScrollView, StyleSheet, Text, View} from 'react-native';
 
 import {Button} from '@components/ui/Button';
 import {EmptyState} from '@components/ui/EmptyState';
@@ -18,7 +12,10 @@ import {
   SCREEN_EDGES_BELOW_HEADER,
 } from '@components/layout/ScreenContainer';
 import {useTaskById} from '@features/tasks/hooks/useTaskById';
-import {useTasksController} from '@features/tasks/hooks/useTasksController';
+import {
+  useTasksActions,
+  useTasksMutationState,
+} from '@features/tasks/hooks/useTasksController';
 import {
   formatTaskDate,
   formatTaskDateTime,
@@ -36,23 +33,27 @@ export function TaskDetailsScreen() {
   const {taskId} = route.params;
   const {theme} = useTheme();
   const task = useTaskById(taskId);
-  const {refresh, remove, toggleCompleted, isLoading, isSaving, errorMessage} =
-    useTasksController();
+  const {refresh, remove, toggleCompleted} = useTasksActions();
+  const {isSaving, errorMessage} = useTasksMutationState();
   const [isBootstrapping, setIsBootstrapping] = useState(!task);
+  const [isHydrating, setIsHydrating] = useState(false);
 
   useEffect(() => {
     if (task) {
       setIsBootstrapping(false);
+      setIsHydrating(false);
       return;
     }
 
     let cancelled = false;
+    setIsHydrating(true);
     refresh()
       .unwrap()
       .catch(() => undefined)
       .finally(() => {
         if (!cancelled) {
           setIsBootstrapping(false);
+          setIsHydrating(false);
         }
       });
 
@@ -119,7 +120,7 @@ export function TaskDetailsScreen() {
     );
   }, [navigation, remove, taskId]);
 
-  if (isBootstrapping || (isLoading && !task)) {
+  if (isBootstrapping || (isHydrating && !task)) {
     return (
       <ScreenContainer edges={SCREEN_EDGES_BELOW_HEADER}>
         <ConnectivityStatusBar />

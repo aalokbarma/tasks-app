@@ -73,12 +73,7 @@ export function createFirebaseMessagingService(): FirebaseMessagingService {
     async getDeviceToken(): Promise<string | null> {
       try {
         ensureFirebaseReady(getFirebaseAppHandle().ready);
-
-        const permitted = await requestNotificationPermission();
-        if (!permitted) {
-          return null;
-        }
-
+        // Caller is expected to request permission first (see registerPushForUser).
         return await getToken(getMessaging());
       } catch (error) {
         // Graceful: push is bonus; app works without a token.

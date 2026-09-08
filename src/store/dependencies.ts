@@ -33,11 +33,24 @@ export function requireTaskRepository(): TaskRepository {
     );
   }
 
+  // Repository identity can change after DB init — drop cached use cases.
+  if (cachedTaskUseCasesRepo !== repository) {
+    cachedTaskUseCases = null;
+    cachedTaskUseCasesRepo = repository;
+  }
+
   return repository;
 }
 
+let cachedTaskUseCases: TaskUseCases | null = null;
+let cachedTaskUseCasesRepo: TaskRepository | null = null;
+
 export function requireTaskUseCases(): TaskUseCases {
-  return createTaskUseCases(requireTaskRepository());
+  if (!cachedTaskUseCases) {
+    cachedTaskUseCases = createTaskUseCases(requireTaskRepository());
+  }
+
+  return cachedTaskUseCases;
 }
 
 export function requireTaskRemoteDataSource(): TaskRemoteDataSource {
@@ -83,6 +96,10 @@ export function registerSyncManager(manager: SyncManager): void {
   syncManager = manager;
 }
 
+export function clearSyncManager(): void {
+  syncManager = null;
+}
+
 export function requireSyncManager(): SyncManager {
   if (!syncManager) {
     throw new Error(
@@ -96,4 +113,6 @@ export function requireSyncManager(): SyncManager {
 export function resetSyncRuntimeForTests(): void {
   syncManager = null;
   connectivityService = null;
+  cachedTaskUseCases = null;
+  cachedTaskUseCasesRepo = null;
 }

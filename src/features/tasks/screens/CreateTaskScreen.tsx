@@ -17,7 +17,10 @@ import {
   SCREEN_EDGES_BELOW_HEADER,
 } from '@components/layout/ScreenContainer';
 import {TaskFormFields} from '@features/tasks/components/TaskFormFields';
-import {useTasksController} from '@features/tasks/hooks/useTasksController';
+import {
+  useTasksActions,
+  useTasksMutationState,
+} from '@features/tasks/hooks/useTasksController';
 import {
   emptyTaskFormValues,
   validateTaskForm,
@@ -31,7 +34,8 @@ import {useTheme} from '@theme/ThemeProvider';
 export function CreateTaskScreen() {
   const navigation = useAppNavigation<'CreateTask'>();
   const {theme} = useTheme();
-  const {create, isSaving, errorMessage} = useTasksController();
+  const {create} = useTasksActions();
+  const {isSaving, errorMessage} = useTasksMutationState();
 
   const [values, setValues] = useState<TaskFormValues>(emptyTaskFormValues);
   const [errors, setErrors] = useState<TaskFormErrors>({});

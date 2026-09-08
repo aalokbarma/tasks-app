@@ -1,21 +1,17 @@
 import {HeaderTextButton} from '@components/ui/HeaderTextButton';
-import {lazy, Suspense} from 'react';
+import {lazy, Suspense, useMemo} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {View} from 'react-native';
 
+import {TaskListScreen} from '@features/tasks/screens/TaskListScreen';
 import {useTheme} from '@theme/ThemeProvider';
 
 import {LazyScreenFallback} from './LazyScreenFallback';
 import {createDefaultStackOptions} from './screenOptions';
 import type {AppNavigationProp, AppNavigatorParamList} from './types';
 
-const TaskListScreen = lazy(() =>
-  import('@features/tasks/screens/TaskListScreen').then(module => ({
-    default: module.TaskListScreen,
-  })),
-);
-
+// Home list is eager for faster first paint; secondary screens stay lazy.
 const TaskDetailsScreen = lazy(() =>
   import('@features/tasks/screens/TaskDetailsScreen').then(module => ({
     default: module.TaskDetailsScreen,
@@ -68,7 +64,10 @@ function TaskListHeaderRight() {
  */
 export function AppNavigator() {
   const {theme} = useTheme();
-  const screenOptions = createDefaultStackOptions(theme);
+  const screenOptions = useMemo(
+    () => createDefaultStackOptions(theme),
+    [theme],
+  );
 
   return (
     <Suspense fallback={<LazyScreenFallback />}>

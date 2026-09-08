@@ -1,5 +1,6 @@
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {useMemo} from 'react';
 
 import {selectAuthStatus} from '@store/selectors';
 import {useAppSelector} from '@store/hooks';
@@ -26,7 +27,10 @@ const RootStack = createNativeStackNavigator<RootNavigatorParamList>();
 export function RootNavigator() {
   const authStatus = useAppSelector(selectAuthStatus);
   const {theme} = useTheme();
-  const navigationTheme = createNavigationTheme(theme);
+  const navigationTheme = useMemo(
+    () => createNavigationTheme(theme),
+    [theme],
+  );
 
   const isRestoringSession = authStatus === 'unknown';
   const isAuthenticated = authStatus === 'authenticated';

@@ -6,7 +6,12 @@ export {
   useSelectedTask,
 } from './hooks/useTasks';
 export {useTaskById} from './hooks/useTaskById';
-export {useTasksController} from './hooks/useTasksController';
+export {
+  useTasksActions,
+  useTasksController,
+  useTasksListState,
+  useTasksMutationState,
+} from './hooks/useTasksController';
 export type {TaskRepository} from './repositories/TaskRepository';
 export {CreateTaskScreen} from './screens/CreateTaskScreen';
 export {EditTaskScreen} from './screens/EditTaskScreen';

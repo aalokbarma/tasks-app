@@ -18,10 +18,12 @@ export async function registerPushForUser(params: {
   userId: UniqueId;
 }): Promise<() => void> {
   try {
-    await params.push.requestPermission();
-    const token = await params.push.getDeviceToken();
-    if (token) {
-      await params.push.registerTokenForUser(params.userId, token);
+    const permitted = await params.push.requestPermission();
+    if (permitted) {
+      const token = await params.push.getDeviceToken();
+      if (token) {
+        await params.push.registerTokenForUser(params.userId, token);
+      }
     }
   } catch (error) {
     console.error('[notifications] FCM token registration failed.', error);

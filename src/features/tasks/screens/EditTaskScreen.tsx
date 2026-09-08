@@ -20,7 +20,10 @@ import {
 } from '@components/layout/ScreenContainer';
 import {TaskFormFields} from '@features/tasks/components/TaskFormFields';
 import {useTaskById} from '@features/tasks/hooks/useTaskById';
-import {useTasksController} from '@features/tasks/hooks/useTasksController';
+import {
+  useTasksActions,
+  useTasksMutationState,
+} from '@features/tasks/hooks/useTasksController';
 import {
   taskToFormValues,
   toUpdateTaskInput,
@@ -37,8 +40,8 @@ export function EditTaskScreen() {
   const {taskId} = route.params;
   const {theme} = useTheme();
   const task = useTaskById(taskId);
-  const {refresh, update, isLoading, isSaving, errorMessage} =
-    useTasksController();
+  const {refresh, update} = useTasksActions();
+  const {isSaving, errorMessage} = useTasksMutationState();
 
   const [values, setValues] = useState<TaskFormValues | null>(
     task ? taskToFormValues(task) : null,
@@ -46,21 +49,25 @@ export function EditTaskScreen() {
   const [errors, setErrors] = useState<TaskFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isBootstrapping, setIsBootstrapping] = useState(!task);
+  const [isHydrating, setIsHydrating] = useState(false);
 
   useEffect(() => {
     if (task) {
       setValues(current => current ?? taskToFormValues(task));
       setIsBootstrapping(false);
+      setIsHydrating(false);
       return;
     }
 
     let cancelled = false;
+    setIsHydrating(true);
     refresh()
       .unwrap()
       .catch(() => undefined)
       .finally(() => {
         if (!cancelled) {
           setIsBootstrapping(false);
+          setIsHydrating(false);
         }
       });
 
@@ -139,7 +146,7 @@ export function EditTaskScreen() {
     });
   }, [busy, handleSubmit, navigation, values]);
 
-  if (isBootstrapping || (isLoading && !task)) {
+  if (isBootstrapping || (isHydrating && !task)) {
     return (
       <ScreenContainer edges={SCREEN_EDGES_BELOW_HEADER}>
         <ConnectivityStatusBar />

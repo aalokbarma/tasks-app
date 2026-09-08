@@ -31,6 +31,7 @@ import {subscribeForegroundMessages} from '@services/notifications/fcmHandlers';
 import {toISODateString} from '@utils/date';
 import type {UniqueId} from '@app-types/common';
 import {
+  clearSyncManager,
   getConnectivityService,
   registerSyncManager,
   requireAuthRepository,
@@ -49,12 +50,21 @@ let stopForegroundMessages: (() => void) | null = null;
 let stopTokenRefresh: (() => void) | null = null;
 let lastObservedUserId: UniqueId | null | undefined;
 let syncManagerStarted = false;
+/** Bumped on teardown so in-flight bootstrap cannot re-attach listeners. */
+let bootstrapGeneration = 0;
 
 /**
  * Application bootstrap side-effects that belong outside React components.
  */
 export async function bootstrapAppState(dispatch: AppDispatch): Promise<void> {
+  const generation = ++bootstrapGeneration;
+  const isCurrent = () => generation === bootstrapGeneration;
+
   const hydrateResult = await dispatch(hydrateAuthSession());
+  if (!isCurrent()) {
+    return;
+  }
+
   if (hydrateAuthSession.fulfilled.match(hydrateResult)) {
     lastObservedUserId = hydrateResult.payload.user?.uid ?? null;
   } else {
@@ -62,10 +72,21 @@ export async function bootstrapAppState(dispatch: AppDispatch): Promise<void> {
   }
 
   startAuthSessionObserver(dispatch);
+  if (!isCurrent()) {
+    return;
+  }
+
   await ensureSyncManager(dispatch);
+  if (!isCurrent()) {
+    return;
+  }
+
   startForegroundMessageListener();
 
   await dispatch(refreshNetworkStatus());
+  if (!isCurrent()) {
+    return;
+  }
 
   if (!stopNetworkMonitor) {
     stopNetworkMonitor = getConnectivityService().subscribe(snapshot => {
@@ -78,6 +99,10 @@ export async function bootstrapAppState(dispatch: AppDispatch): Promise<void> {
     await dispatch(refreshPendingSyncCount());
   } catch {
     // Database may still be initializing; pending count refreshes after local persistence is ready.
+  }
+
+  if (!isCurrent()) {
+    return;
   }
 
   if (lastObservedUserId) {
@@ -218,6 +243,9 @@ export function teardownAuthMonitoring(): void {
 }
 
 export function teardownAppObservers(): void {
+  // Invalidate any in-flight bootstrapAppState before clearing refs.
+  bootstrapGeneration += 1;
+
   teardownNetworkMonitoring();
   teardownAuthMonitoring();
 
@@ -227,9 +255,14 @@ export function teardownAppObservers(): void {
   stopTokenRefresh = null;
 
   if (syncManagerStarted) {
-    requireSyncManager()
-      .stop()
-      .catch(() => undefined);
+    try {
+      requireSyncManager()
+        .stop()
+        .catch(() => undefined);
+    } catch {
+      // Manager may already be cleared.
+    }
+    clearSyncManager();
     syncManagerStarted = false;
   }
 }

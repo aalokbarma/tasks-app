@@ -11,7 +11,6 @@ import {
   updateTask,
 } from '../slice/tasksThunks';
 import {
-  useSelectedTask,
   useTasks,
   useTasksError,
   useTasksLoading,
@@ -19,16 +18,11 @@ import {
 } from './useTasks';
 
 /**
- * Feature controller — keeps task mutations out of screen JSX.
- * All paths go UI → thunk → use case → SQLite (offline-first).
+ * Stable mutation helpers — no Redux list subscriptions.
+ * Pair with useTasksListState / useTasksMutationState as needed.
  */
-export function useTasksController() {
+export function useTasksActions() {
   const dispatch = useAppDispatch();
-  const tasks = useTasks();
-  const isLoading = useTasksLoading();
-  const isSaving = useTasksSaving();
-  const errorMessage = useTasksError();
-  const selectedTask = useSelectedTask();
 
   const refresh = useCallback(
     (filters?: TaskFilters) => dispatch(loadTasks(filters)),
@@ -56,15 +50,45 @@ export function useTasksController() {
   );
 
   return {
-    tasks,
-    isLoading,
-    isSaving,
-    errorMessage,
-    selectedTask,
     refresh,
     create,
     update,
     remove,
     toggleCompleted,
+  };
+}
+
+/** List screen: items + load/error flags (not isSaving / selectedTask). */
+export function useTasksListState() {
+  return {
+    tasks: useTasks(),
+    isLoading: useTasksLoading(),
+    errorMessage: useTasksError(),
+  };
+}
+
+/** Mutation screens: saving + error only (not the full items array). */
+export function useTasksMutationState() {
+  return {
+    isSaving: useTasksSaving(),
+    errorMessage: useTasksError(),
+  };
+}
+
+/**
+ * @deprecated Prefer useTasksActions + useTasksListState / useTasksMutationState
+ * to avoid over-subscribing screens to the full task list.
+ */
+export function useTasksController() {
+  const actions = useTasksActions();
+  const list = useTasksListState();
+  const mutation = useTasksMutationState();
+
+  return {
+    ...actions,
+    tasks: list.tasks,
+    isLoading: list.isLoading,
+    isSaving: mutation.isSaving,
+    errorMessage: mutation.errorMessage ?? list.errorMessage,
   };
 }
