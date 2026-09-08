@@ -1,97 +1,97 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# TasksApp
 
-# Getting Started
+Cross-platform task management app (React Native CLI + TypeScript) for a team-lead take-home assignment.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Current status
 
-## Step 1: Start Metro
+Scaffold only: feature-based architecture, typed contracts, Redux store, navigation shells, and environment templates. Business features (Firebase Auth, SQLite, sync, notifications) are intentionally not implemented yet.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Architecture
 
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+```
+UI (screens/components)
+  → hooks
+  → Redux / use cases
+  → repositories & service interfaces
+  → SQLite (local) / Firebase (remote adapters)
 ```
 
-## Step 2: Build and run your app
+- **SQLite** is the offline source of truth (to be wired next).
+- **Firestore** is reached only through remote data-source adapters under `services/firebase` — never from the tasks feature UI module.
+- **Auth / App stacks** are selected from Redux auth status.
+- Screens are **lazy-loaded** via `React.lazy` + `Suspense`.
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+## Folder structure
 
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```
+src/
+  app/            # App entry, providers, dependency composition
+  components/     # Shared UI / layout
+  config/         # Env + constants
+  database/       # SQLite client, schema, repository adapters
+  features/       # auth, tasks, sync, notifications, settings
+  hooks/          # Shared typed Redux hooks
+  navigation/     # AuthStack, AppStack, RootNavigator
+  services/       # Firebase, network, notifications, storage adapters
+  store/          # Redux Toolkit store
+  theme/          # Light/dark design tokens + ThemeProvider
+  types/          # Shared domain primitive types
+  utils/          # Pure helpers
 ```
 
-### iOS
+Path aliases: `@app`, `@components`, `@config`, `@database`, `@features`, `@hooks`, `@navigation`, `@services`, `@store`, `@theme`, `@app-types`, `@utils`.
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+## Environment setup
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+1. Copy env templates (do not commit real values):
 
 ```sh
+cp .env.development.example .env.development
+cp .env.staging.example .env.staging
+cp .env.production.example .env.production
+```
+
+2. Fill public Firebase web config keys when ready. Native config files belong under `android/app/` and `ios/` — see `firebase/README.md`.
+
+3. `.env*` files (except `*.example`) and `google-services.json` / `GoogleService-Info.plist` are gitignored.
+
+## Scripts
+
+```sh
+npm start          # Metro
+npm run ios        # iOS
+npm run android    # Android
+npm run typecheck  # tsc --noEmit
+npm run lint       # ESLint
+npm test           # Jest
+```
+
+## Libraries (installed for scaffold)
+
+| Area | Packages |
+|------|----------|
+| Navigation | `@react-navigation/native`, `native-stack`, `screens`, `gesture-handler`, `safe-area-context` |
+| State | `@reduxjs/toolkit`, `react-redux` |
+| Config | `react-native-config` |
+| IDs | `uuid` |
+
+Deferred installs (next phases): `@react-native-firebase/*`, `react-native-nitro-sqlite`, `@notifee/react-native`, `@react-native-community/netinfo`.
+
+## Limitations (scaffold)
+
+- No Firebase, SQLite, sync, or notification behavior yet.
+- Auth bootstraps to `unauthenticated` so navigation is exercisable.
+- Infrastructure factories throw `NotImplementedError` until implemented.
+- Native linking for `react-native-config` / gesture-handler / screens still required before device builds of those features.
+
+## Run instructions
+
+Follow the React Native environment guide, then:
+
+```sh
+npm install
 bundle install
+bundle exec pod install --project-directory=ios
+npm start
+npm run ios   # or npm run android
 ```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
