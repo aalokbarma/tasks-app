@@ -25,16 +25,33 @@ export function EmptyState({
         {
           paddingHorizontal: theme.spacing.xl,
           paddingVertical: theme.spacing.xxl,
+          gap: theme.spacing.sm,
         },
       ]}
       accessibilityRole="summary">
+      <View
+        style={[
+          styles.mark,
+          {
+            backgroundColor: theme.colors.primaryMuted,
+            borderRadius: theme.radii.full,
+            marginBottom: theme.spacing.sm,
+          },
+        ]}>
+        <Text
+          style={[
+            theme.typography.subtitle,
+            {color: theme.colors.primary},
+          ]}>
+          ✓
+        </Text>
+      </View>
       <Text
         style={[
           theme.typography.title,
           {
             color: theme.colors.textPrimary,
             textAlign: 'center',
-            marginBottom: theme.spacing.sm,
           },
         ]}>
         {title}
@@ -54,7 +71,7 @@ export function EmptyState({
         <View
           style={[
             styles.action,
-            {marginTop: theme.spacing.lg, maxWidth: 280},
+            {marginTop: theme.spacing.md, maxWidth: 280},
           ]}>
           <Button label={actionLabel} onPress={onActionPress} />
         </View>
@@ -66,6 +83,12 @@ export function EmptyState({
 const styles = StyleSheet.create({
   root: {
     flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mark: {
+    width: 56,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
   },

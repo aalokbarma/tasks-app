@@ -1,27 +1,13 @@
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
-
+import {LoadingState} from '@components/ui/LoadingState';
 import {useTheme} from '@theme/ThemeProvider';
+import {View} from 'react-native';
 
-/**
- * Shared Suspense fallback for lazily loaded screens.
- */
 export function LazyScreenFallback() {
   const {theme} = useTheme();
 
   return (
-    <View
-      accessibilityLabel="Loading screen"
-      accessibilityRole="progressbar"
-      style={[styles.fallback, {backgroundColor: theme.colors.background}]}>
-      <ActivityIndicator color={theme.colors.primary} />
+    <View style={{flex: 1, backgroundColor: theme.colors.background}}>
+      <LoadingState label="Loading…" />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  fallback: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

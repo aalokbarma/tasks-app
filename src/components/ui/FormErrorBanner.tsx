@@ -28,12 +28,14 @@ export function FormErrorBanner({
           backgroundColor: theme.colors.dangerMuted,
           borderColor: theme.colors.danger,
           borderRadius: theme.radii.md,
+          paddingHorizontal: theme.spacing.md - 2,
+          paddingVertical: theme.spacing.compact,
         },
       ]}>
       <Text
         style={[
           theme.typography.caption,
-          {color: theme.colors.danger, fontWeight: '500'},
+          {color: theme.colors.danger, fontWeight: '600'},
         ]}>
         {message}
       </Text>
@@ -44,7 +46,5 @@ export function FormErrorBanner({
 const styles = StyleSheet.create({
   banner: {
     borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
   },
 });

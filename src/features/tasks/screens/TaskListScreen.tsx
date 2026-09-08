@@ -1,18 +1,20 @@
 import {useCallback, useEffect, useState} from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
   View,
   type ListRenderItemInfo,
 } from 'react-native';
 
 import {EmptyState} from '@components/ui/EmptyState';
 import {FormErrorBanner} from '@components/ui/FormErrorBanner';
+import {LoadingState} from '@components/ui/LoadingState';
 import {ConnectivityStatusBar} from '@components/ui/ConnectivityStatusBar';
-import {ScreenContainer} from '@components/layout/ScreenContainer';
+import {
+  ScreenContainer,
+  SCREEN_EDGES_BELOW_HEADER,
+} from '@components/layout/ScreenContainer';
 import {
   TaskListItem,
   TASK_ROW_HEIGHT,
@@ -74,7 +76,6 @@ export function TaskListScreen() {
     setIsRefreshing(true);
     try {
       await refresh().unwrap();
-      // Pull-to-refresh also nudges sync when online — never blocks offline use.
       if (isOnline) {
         dispatch(runSynchronization());
       }
@@ -117,11 +118,18 @@ export function TaskListScreen() {
   const showInitialLoading = isLoading && !hasLoadedOnce && tasks.length === 0;
 
   return (
-    <ScreenContainer>
+    <ScreenContainer edges={SCREEN_EDGES_BELOW_HEADER}>
       <ConnectivityStatusBar />
       <View style={styles.body}>
         {errorMessage ? (
-          <View style={styles.errorWrap}>
+          <View
+            style={[
+              styles.errorWrap,
+              {
+                paddingHorizontal: theme.spacing.md,
+                paddingTop: theme.spacing.sm + 4,
+              },
+            ]}>
             <FormErrorBanner
               message={errorMessage}
               accessibilityLabel="Tasks error"
@@ -130,17 +138,7 @@ export function TaskListScreen() {
         ) : null}
 
         {showInitialLoading ? (
-          <View style={styles.centered}>
-            <ActivityIndicator color={theme.colors.primary} />
-            <Text
-              style={[
-                styles.loadingLabel,
-                theme.typography.caption,
-                {color: theme.colors.textSecondary},
-              ]}>
-              Loading your tasks…
-            </Text>
-          </View>
+          <LoadingState label="Loading your tasks…" />
         ) : (
           <FlatList
             data={tasks}
@@ -152,13 +150,22 @@ export function TaskListScreen() {
             windowSize={7}
             removeClippedSubviews
             contentContainerStyle={
-              tasks.length === 0 ? styles.emptyListContent : styles.listContent
+              tasks.length === 0
+                ? styles.emptyListContent
+                : [
+                    styles.listContent,
+                    {
+                      paddingTop: theme.spacing.sm + 4,
+                      paddingBottom: theme.spacing.xl,
+                    },
+                  ]
             }
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
                 tintColor={theme.colors.primary}
+                colors={[theme.colors.primary]}
               />
             }
             ListEmptyComponent={
@@ -180,23 +187,8 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
   },
-  errorWrap: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  loadingLabel: {
-    textAlign: 'center',
-  },
-  listContent: {
-    paddingTop: 12,
-    paddingBottom: 24,
-  },
+  errorWrap: {},
+  listContent: {},
   emptyListContent: {
     flexGrow: 1,
   },

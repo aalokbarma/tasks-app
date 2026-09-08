@@ -17,6 +17,7 @@ export interface TextFieldProps extends Omit<TextInputProps, 'style'> {
   value: string;
   onChangeText: (value: string) => void;
   error?: string | null;
+  hint?: string | null;
   accessibilityLabel?: string;
   rightAccessory?: ReactNode;
   containerStyle?: object;
@@ -28,6 +29,7 @@ export function TextField({
   value,
   onChangeText,
   error,
+  hint,
   accessibilityLabel,
   rightAccessory,
   containerStyle,
@@ -41,16 +43,22 @@ export function TextField({
   const borderColor = error
     ? theme.colors.danger
     : focused
-      ? theme.colors.primary
+      ? theme.colors.focusRing
       : theme.colors.border;
 
   return (
     <View style={[styles.container, containerStyle]}>
       <Text
         style={[
-          styles.label,
-          theme.typography.caption,
-          {color: theme.colors.textSecondary},
+          theme.typography.label,
+          {
+            color: error
+              ? theme.colors.danger
+              : focused
+                ? theme.colors.textPrimary
+                : theme.colors.textSecondary,
+            marginBottom: theme.spacing.xs + 2,
+          },
         ]}>
         {label}
       </Text>
@@ -59,9 +67,12 @@ export function TextField({
           styles.inputRow,
           inputProps.multiline && styles.inputRowMultiline,
           {
-            backgroundColor: theme.colors.surface,
+            backgroundColor: editable
+              ? theme.colors.surface
+              : theme.colors.surfaceMuted,
             borderColor,
             borderRadius: theme.radii.md,
+            borderWidth: focused || error ? 1.5 : 1,
           },
         ]}>
         <TextInput
@@ -71,6 +82,7 @@ export function TextField({
           editable={editable}
           placeholderTextColor={theme.colors.textTertiary}
           accessibilityLabel={accessibilityLabel ?? label}
+          accessibilityState={{disabled: !editable}}
           onFocus={event => {
             setFocused(true);
             inputProps.onFocus?.(event);
@@ -82,9 +94,7 @@ export function TextField({
           style={[
             styles.input,
             theme.typography.body,
-            {
-              color: theme.colors.textPrimary,
-            },
+            {color: theme.colors.textPrimary},
             !editable && styles.inputDisabled,
             inputStyle,
           ]}
@@ -95,11 +105,25 @@ export function TextField({
         <Text
           accessibilityLiveRegion="polite"
           style={[
-            styles.error,
             theme.typography.caption,
-            {color: theme.colors.danger},
+            {
+              color: theme.colors.danger,
+              marginTop: theme.spacing.xs + 2,
+              fontWeight: '500',
+            },
           ]}>
           {error}
+        </Text>
+      ) : hint ? (
+        <Text
+          style={[
+            theme.typography.caption,
+            {
+              color: theme.colors.textTertiary,
+              marginTop: theme.spacing.xs + 2,
+            },
+          ]}>
+          {hint}
         </Text>
       ) : null}
     </View>
@@ -131,18 +155,17 @@ export function PasswordField({
       secureTextEntry={!visible}
       autoCapitalize="none"
       autoCorrect={false}
-      textContentType="password"
+      textContentType={props.textContentType ?? 'password'}
       rightAccessory={
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={toggleLabel}
-          hitSlop={8}
+          hitSlop={10}
           onPress={() => setVisible(current => !current)}
           style={styles.toggle}>
           <Text
             style={[
-              styles.toggleLabel,
-              theme.typography.caption,
+              theme.typography.label,
               {color: theme.colors.primary},
             ]}>
             {visible ? 'Hide' : 'Show'}
@@ -157,12 +180,8 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
   },
-  label: {
-    marginBottom: 6,
-  },
   inputRow: {
     minHeight: 52,
-    borderWidth: 1,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
@@ -170,23 +189,20 @@ const styles = StyleSheet.create({
   inputRowMultiline: {
     alignItems: 'flex-start',
     paddingVertical: 4,
+    minHeight: 110,
   },
   input: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   inputDisabled: {
-    opacity: 0.6,
-  },
-  error: {
-    marginTop: 6,
+    opacity: 0.7,
   },
   toggle: {
     marginLeft: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 4,
-  },
-  toggleLabel: {
-    fontWeight: '600',
+    minHeight: 44,
+    minWidth: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

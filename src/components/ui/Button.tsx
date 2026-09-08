@@ -50,7 +50,11 @@ export function Button({
           : theme.colors.textPrimary;
 
   const borderColor =
-    variant === 'secondary' ? theme.colors.border : 'transparent';
+    variant === 'secondary'
+      ? theme.colors.borderStrong
+      : variant === 'ghost'
+        ? 'transparent'
+        : 'transparent';
 
   return (
     <Pressable
@@ -66,7 +70,8 @@ export function Button({
           backgroundColor,
           borderColor,
           borderRadius: theme.radii.md,
-          opacity: isDisabled ? 0.55 : pressed ? 0.88 : 1,
+          minHeight: 52,
+          opacity: isDisabled ? 0.5 : pressed ? 0.9 : 1,
         },
       ]}>
       {loading ? (
@@ -86,7 +91,6 @@ export function Button({
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 52,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

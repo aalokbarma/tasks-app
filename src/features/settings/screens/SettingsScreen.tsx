@@ -1,6 +1,9 @@
 import {StyleSheet, Text, View} from 'react-native';
 
-import {ScreenContainer} from '@components/layout/ScreenContainer';
+import {
+  ScreenContainer,
+  SCREEN_EDGES_BELOW_HEADER,
+} from '@components/layout/ScreenContainer';
 import {Button} from '@components/ui/Button';
 import {FormErrorBanner} from '@components/ui/FormErrorBanner';
 import {ThemeModeSelector} from '@components/ui/ThemeModeSelector';
@@ -29,7 +32,7 @@ export function SettingsScreen() {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer edges={SCREEN_EDGES_BELOW_HEADER}>
       <View
         style={[
           styles.content,
@@ -39,24 +42,23 @@ export function SettingsScreen() {
             gap: theme.spacing.md,
           },
         ]}>
-        <Text
-          accessibilityRole="header"
-          style={[
-            theme.typography.title,
-            {color: theme.colors.textPrimary, marginBottom: theme.spacing.xs},
-          ]}>
-          Account
-        </Text>
-        <Text
-          style={[
-            theme.typography.body,
-            {
-              color: theme.colors.textSecondary,
-              marginBottom: theme.spacing.sm,
-            },
-          ]}>
-          You are signed in. Tasks are scoped to this account only.
-        </Text>
+        <View style={{gap: theme.spacing.xs}}>
+          <Text
+            accessibilityRole="header"
+            style={[
+              theme.typography.title,
+              {color: theme.colors.textPrimary},
+            ]}>
+            Account
+          </Text>
+          <Text
+            style={[
+              theme.typography.body,
+              {color: theme.colors.textSecondary},
+            ]}>
+            You are signed in. Tasks are scoped to this account only.
+          </Text>
+        </View>
 
         <View
           style={[
@@ -92,7 +94,10 @@ export function SettingsScreen() {
             <Text
               style={[
                 theme.typography.caption,
-                {color: theme.colors.textSecondary, marginTop: theme.spacing.xxs},
+                {
+                  color: theme.colors.textSecondary,
+                  marginTop: theme.spacing.xxs,
+                },
               ]}>
               {user.email}
             </Text>

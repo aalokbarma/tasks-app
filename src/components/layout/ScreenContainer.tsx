@@ -4,11 +4,38 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useTheme} from '@theme/ThemeProvider';
 
-type ScreenContainerProps = PropsWithChildren;
+export type SafeAreaEdge = 'top' | 'bottom' | 'left' | 'right';
 
-export function ScreenContainer({children}: ScreenContainerProps) {
+type ScreenContainerProps = PropsWithChildren<{
+  /**
+   * Which safe-area insets to apply.
+   * Prefer omitting `top` under a React Navigation header to avoid double padding.
+   * Default: all edges (full-bleed / auth screens without a header).
+   */
+  edges?: ReadonlyArray<SafeAreaEdge>;
+}>;
+
+const DEFAULT_EDGES: ReadonlyArray<SafeAreaEdge> = [
+  'top',
+  'bottom',
+  'left',
+  'right',
+];
+
+/** Screens that sit under a stack header. */
+export const SCREEN_EDGES_BELOW_HEADER: ReadonlyArray<SafeAreaEdge> = [
+  'bottom',
+  'left',
+  'right',
+];
+
+export function ScreenContainer({
+  children,
+  edges = DEFAULT_EDGES,
+}: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
   const {theme} = useTheme();
+  const apply = new Set(edges);
 
   return (
     <View
@@ -16,10 +43,10 @@ export function ScreenContainer({children}: ScreenContainerProps) {
         styles.container,
         {
           backgroundColor: theme.colors.background,
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom,
-          paddingLeft: insets.left,
-          paddingRight: insets.right,
+          paddingTop: apply.has('top') ? insets.top : 0,
+          paddingBottom: apply.has('bottom') ? insets.bottom : 0,
+          paddingLeft: apply.has('left') ? insets.left : 0,
+          paddingRight: apply.has('right') ? insets.right : 0,
         },
       ]}>
       {children}

@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 
 import {Button} from '@components/ui/Button';
@@ -13,9 +13,11 @@ import {
 } from '@features/auth/utils/validateAuthForm';
 import type {AuthNavigationProp} from '@navigation/types';
 import {signUpWithEmail} from '@features/auth/slice/authThunks';
+import {useTheme} from '@theme/ThemeProvider';
 
 export function SignUpScreen() {
   const navigation = useNavigation<AuthNavigationProp<'Signup'>>();
+  const {theme} = useTheme();
   const {isAuthenticating, errorMessage, clearError, signUp} =
     useAuthController();
 
@@ -76,6 +78,7 @@ export function SignUpScreen() {
       footerPrompt="Already have an account?"
       footerActionLabel="Sign in"
       footerDisabled={busy}
+      belowHeader
       onFooterPress={() => navigation.navigate('Login')}>
       <FormErrorBanner
         message={errorMessage}
@@ -99,6 +102,7 @@ export function SignUpScreen() {
         returnKeyType="next"
         editable={!busy}
         accessibilityLabel="Display name"
+        placeholder="Your name"
       />
 
       <TextField
@@ -120,6 +124,7 @@ export function SignUpScreen() {
         returnKeyType="next"
         editable={!busy}
         accessibilityLabel="Email address"
+        placeholder="you@example.com"
       />
 
       <PasswordField
@@ -138,6 +143,7 @@ export function SignUpScreen() {
         returnKeyType="next"
         editable={!busy}
         accessibilityLabel="Password"
+        placeholder="At least 8 characters"
       />
 
       <PasswordField
@@ -157,9 +163,10 @@ export function SignUpScreen() {
         onSubmitEditing={handleSubmit}
         editable={!busy}
         accessibilityLabel="Confirm password"
+        placeholder="Repeat password"
       />
 
-      <View style={styles.actions}>
+      <View style={{marginTop: theme.spacing.sm}}>
         <Button
           label="Create account"
           onPress={handleSubmit}
@@ -171,9 +178,3 @@ export function SignUpScreen() {
     </AuthFormLayout>
   );
 }
-
-const styles = StyleSheet.create({
-  actions: {
-    marginTop: 8,
-  },
-});

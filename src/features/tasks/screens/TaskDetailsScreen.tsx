@@ -1,6 +1,5 @@
 import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
@@ -12,8 +11,12 @@ import {Button} from '@components/ui/Button';
 import {EmptyState} from '@components/ui/EmptyState';
 import {FormErrorBanner} from '@components/ui/FormErrorBanner';
 import {HeaderTextButton} from '@components/ui/HeaderTextButton';
+import {LoadingState} from '@components/ui/LoadingState';
 import {ConnectivityStatusBar} from '@components/ui/ConnectivityStatusBar';
-import {ScreenContainer} from '@components/layout/ScreenContainer';
+import {
+  ScreenContainer,
+  SCREEN_EDGES_BELOW_HEADER,
+} from '@components/layout/ScreenContainer';
 import {useTaskById} from '@features/tasks/hooks/useTaskById';
 import {useTasksController} from '@features/tasks/hooks/useTasksController';
 import {
@@ -65,6 +68,7 @@ export function TaskDetailsScreen() {
         task ? (
           <HeaderTextButton
             label="Edit"
+            prominence="strong"
             accessibilityLabel="Edit task"
             onPress={() => navigation.navigate('EditTask', {taskId: task.id})}
           />
@@ -87,7 +91,7 @@ export function TaskDetailsScreen() {
   const handleDelete = useCallback(() => {
     Alert.alert(
       'Delete task?',
-      'This removes the task from this device and queues the delete for sync.',
+      'This removes the task from this device and queues the delete for sync when you are online.',
       [
         {text: 'Cancel', style: 'cancel'},
         {
@@ -117,18 +121,16 @@ export function TaskDetailsScreen() {
 
   if (isBootstrapping || (isLoading && !task)) {
     return (
-      <ScreenContainer>
+      <ScreenContainer edges={SCREEN_EDGES_BELOW_HEADER}>
         <ConnectivityStatusBar />
-        <View style={styles.centered}>
-          <ActivityIndicator color={theme.colors.primary} />
-        </View>
+        <LoadingState label="Loading task…" />
       </ScreenContainer>
     );
   }
 
   if (!task) {
     return (
-      <ScreenContainer>
+      <ScreenContainer edges={SCREEN_EDGES_BELOW_HEADER}>
         <ConnectivityStatusBar />
         <EmptyState
           title="Task not found"
@@ -142,11 +144,20 @@ export function TaskDetailsScreen() {
 
   const dueLabel = formatTaskDate(task.dueAt);
   const updatedLabel = formatTaskDateTime(task.updatedAt);
+  const pendingSync = task.syncStatus !== 'synced';
 
   return (
-    <ScreenContainer>
+    <ScreenContainer edges={SCREEN_EDGES_BELOW_HEADER}>
       <ConnectivityStatusBar />
-      <ScrollView contentContainerStyle={[styles.content, {padding: theme.spacing.lg}]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          {
+            padding: theme.spacing.lg,
+            gap: theme.spacing.md,
+            paddingBottom: theme.spacing.xxl,
+          },
+        ]}>
         <FormErrorBanner
           message={errorMessage}
           accessibilityLabel="Task details error"
@@ -159,63 +170,104 @@ export function TaskDetailsScreen() {
               backgroundColor: theme.colors.surface,
               borderColor: theme.colors.border,
               borderRadius: theme.radii.xl,
-              padding: theme.spacing.md + 2,
+              padding: theme.spacing.lg,
               gap: theme.spacing.compact,
             },
             theme.shadows.sm,
           ]}>
+          <View
+            style={[
+              styles.statusRow,
+              {gap: theme.spacing.sm, marginBottom: theme.spacing.xs},
+            ]}>
+            <View
+              style={[
+                styles.statusPill,
+                {
+                  backgroundColor: task.completed
+                    ? theme.colors.successMuted
+                    : theme.colors.primaryMuted,
+                  borderRadius: theme.radii.full,
+                },
+              ]}>
+              <Text
+                style={[
+                  theme.typography.caption,
+                  {
+                    color: task.completed
+                      ? theme.colors.success
+                      : theme.colors.primary,
+                    fontWeight: '700',
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.4,
+                  },
+                ]}>
+                {task.completed ? 'Completed' : 'Active'}
+              </Text>
+            </View>
+            {pendingSync ? (
+              <Text
+                style={[
+                  theme.typography.caption,
+                  {color: theme.colors.textSecondary},
+                ]}>
+                On this device
+              </Text>
+            ) : null}
+          </View>
+
           <Text
             accessibilityRole="header"
             style={[
-              styles.title,
               theme.typography.title,
-              {color: theme.colors.textPrimary},
-              task.completed ? styles.titleCompleted : null,
-            ]}>
-            {task.title}
-          </Text>
-
-          <Text
-            style={[
-              styles.status,
-              theme.typography.caption,
               {
-                color: task.completed
-                  ? theme.colors.success
-                  : theme.colors.textSecondary,
+                color: theme.colors.textPrimary,
+                textDecorationLine: task.completed ? 'line-through' : 'none',
               },
             ]}>
-            {task.completed ? 'Completed' : 'Active'}
-            {task.syncStatus !== 'synced' ? ' · On this device' : ''}
+            {task.title}
           </Text>
 
           {task.description ? (
             <Text
               style={[
-                styles.description,
                 theme.typography.body,
-                {color: theme.colors.textPrimary},
+                {
+                  color: theme.colors.textPrimary,
+                  marginTop: theme.spacing.xs,
+                },
               ]}>
               {task.description}
             </Text>
           ) : (
             <Text
               style={[
-                styles.description,
                 theme.typography.body,
-                {color: theme.colors.textSecondary},
+                {
+                  color: theme.colors.textTertiary,
+                  marginTop: theme.spacing.xs,
+                },
               ]}>
               No description
             </Text>
           )}
 
-          <View style={styles.metaBlock}>
+          <View
+            style={[
+              styles.metaBlock,
+              {
+                marginTop: theme.spacing.md,
+                paddingTop: theme.spacing.md,
+                borderTopColor: theme.colors.separator,
+                gap: theme.spacing.compact,
+              },
+            ]}>
             <MetaRow label="Due" value={dueLabel ?? 'None'} />
             <MetaRow label="Updated" value={updatedLabel ?? '—'} />
           </View>
         </View>
 
-        <View style={styles.actions}>
+        <View style={{gap: theme.spacing.compact}}>
           <Button
             label={task.completed ? 'Mark incomplete' : 'Mark complete'}
             onPress={handleToggle}
@@ -249,7 +301,7 @@ function MetaRow({label, value}: {label: string; value: string}) {
   const {theme} = useTheme();
 
   return (
-    <View style={styles.metaRow}>
+    <View style={{gap: theme.spacing.xxs}}>
       <Text
         style={[
           theme.typography.caption,
@@ -259,8 +311,7 @@ function MetaRow({label, value}: {label: string; value: string}) {
       </Text>
       <Text
         style={[
-          styles.metaValue,
-          theme.typography.body,
+          theme.typography.bodyStrong,
           {color: theme.colors.textPrimary},
         ]}>
         {value}
@@ -278,43 +329,19 @@ function truncate(value: string, max: number): string {
 }
 
 const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    gap: 16,
-    paddingBottom: 40,
-  },
+  content: {},
   card: {
     borderWidth: 1,
   },
-  title: {
-    marginBottom: 0,
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  titleCompleted: {
-    textDecorationLine: 'line-through',
-  },
-  status: {
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-  description: {
-    marginTop: 4,
+  statusPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
   metaBlock: {
-    marginTop: 8,
-    gap: 10,
-  },
-  metaRow: {
-    gap: 2,
-  },
-  metaValue: {
-    fontWeight: '600',
-  },
-  actions: {
-    gap: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
 });

@@ -7,6 +7,8 @@ export interface HeaderTextButtonProps {
   onPress: () => void;
   disabled?: boolean;
   accessibilityLabel?: string;
+  /** Emphasize primary actions like Save in the header. */
+  prominence?: 'default' | 'strong';
 }
 
 /**
@@ -17,6 +19,7 @@ export function HeaderTextButton({
   onPress,
   disabled = false,
   accessibilityLabel,
+  prominence = 'default',
 }: HeaderTextButtonProps) {
   const {theme} = useTheme();
 
@@ -26,15 +29,22 @@ export function HeaderTextButton({
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{disabled}}
       disabled={disabled}
-      hitSlop={8}
+      hitSlop={12}
       onPress={onPress}
-      style={styles.button}>
+      style={({pressed}) => [
+        styles.button,
+        {
+          opacity: disabled ? 0.4 : pressed ? 0.7 : 1,
+          minHeight: 44,
+          justifyContent: 'center',
+        },
+      ]}>
       <Text
         style={[
-          styles.label,
-          theme.typography.body,
+          prominence === 'strong'
+            ? theme.typography.bodyStrong
+            : theme.typography.label,
           {color: theme.colors.primary},
-          disabled ? styles.labelDisabled : null,
         ]}>
         {label}
       </Text>
@@ -44,13 +54,7 @@ export function HeaderTextButton({
 
 const styles = StyleSheet.create({
   button: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
     paddingVertical: 4,
-  },
-  label: {
-    fontWeight: '600',
-  },
-  labelDisabled: {
-    opacity: 0.5,
   },
 });

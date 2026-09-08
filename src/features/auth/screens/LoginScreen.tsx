@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 
 import {Button} from '@components/ui/Button';
@@ -13,9 +13,11 @@ import {
 } from '@features/auth/utils/validateAuthForm';
 import type {AuthNavigationProp} from '@navigation/types';
 import {signInWithEmail} from '@features/auth/slice/authThunks';
+import {useTheme} from '@theme/ThemeProvider';
 
 export function LoginScreen() {
   const navigation = useNavigation<AuthNavigationProp<'Login'>>();
+  const {theme} = useTheme();
   const {
     rememberedEmail,
     isAuthenticating,
@@ -107,6 +109,7 @@ export function LoginScreen() {
         returnKeyType="next"
         editable={!busy}
         accessibilityLabel="Email address"
+        placeholder="you@example.com"
       />
 
       <PasswordField
@@ -120,9 +123,10 @@ export function LoginScreen() {
         onSubmitEditing={handleSubmit}
         editable={!busy}
         accessibilityLabel="Password"
+        placeholder="Your password"
       />
 
-      <View style={styles.actions}>
+      <View style={{marginTop: theme.spacing.sm}}>
         <Button
           label="Sign in"
           onPress={handleSubmit}
@@ -134,9 +138,3 @@ export function LoginScreen() {
     </AuthFormLayout>
   );
 }
-
-const styles = StyleSheet.create({
-  actions: {
-    marginTop: 8,
-  },
-});

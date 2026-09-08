@@ -22,7 +22,7 @@ export function TaskFormFields({
   const reminderEnabled = Boolean(values.dueDate.trim());
 
   return (
-    <View style={styles.root}>
+    <View style={{gap: theme.spacing.md}}>
       <TextField
         label="Title"
         value={values.title}
@@ -32,6 +32,7 @@ export function TaskFormFields({
         autoCapitalize="sentences"
         returnKeyType="next"
         accessibilityLabel="Task title"
+        placeholder="What needs doing?"
       />
       <TextField
         label="Description"
@@ -43,9 +44,10 @@ export function TaskFormFields({
         textAlignVertical="top"
         inputStyle={styles.descriptionInput}
         accessibilityLabel="Task description"
+        placeholder="Optional notes"
       />
       <TextField
-        label="Due date (YYYY-MM-DD)"
+        label="Due date"
         value={values.dueDate}
         onChangeText={dueDate =>
           onChange({
@@ -60,7 +62,8 @@ export function TaskFormFields({
         autoCapitalize="none"
         autoCorrect={false}
         keyboardType="numbers-and-punctuation"
-        placeholder="Optional"
+        placeholder="YYYY-MM-DD"
+        hint="Optional. Use year-month-day format."
         accessibilityLabel="Due date"
       />
 
@@ -71,27 +74,36 @@ export function TaskFormFields({
           disabled: !editable || !reminderEnabled,
         }}
         accessibilityLabel="Remind me on the due date"
+        accessibilityHint={
+          reminderEnabled
+            ? 'Schedules a local notification for the due date'
+            : 'Add a due date to enable reminders'
+        }
         disabled={!editable || !reminderEnabled}
         onPress={() =>
           onChange({remindOnDueDate: !values.remindOnDueDate})
         }
-        style={[
+        style={({pressed}) => [
           styles.reminderRow,
           {
-            borderColor: theme.colors.border,
-            backgroundColor: theme.colors.surface,
+            borderColor: values.remindOnDueDate
+              ? theme.colors.primary
+              : theme.colors.border,
+            backgroundColor: values.remindOnDueDate
+              ? theme.colors.primaryMuted
+              : theme.colors.surface,
             borderRadius: theme.radii.md,
-            opacity: !reminderEnabled || !editable ? 0.55 : 1,
+            opacity: !reminderEnabled || !editable ? 0.5 : pressed ? 0.92 : 1,
           },
         ]}>
         <View
           style={[
             styles.checkbox,
             {
-              borderRadius: theme.radii.xs + 2,
+              borderRadius: theme.radii.sm,
               borderColor: values.remindOnDueDate
                 ? theme.colors.primary
-                : theme.colors.border,
+                : theme.colors.borderStrong,
               backgroundColor: values.remindOnDueDate
                 ? theme.colors.primary
                 : 'transparent',
@@ -107,11 +119,10 @@ export function TaskFormFields({
             </Text>
           ) : null}
         </View>
-        <View style={styles.reminderCopy}>
+        <View style={{flex: 1, gap: theme.spacing.xxs}}>
           <Text
             style={[
-              styles.reminderTitle,
-              theme.typography.body,
+              theme.typography.bodyStrong,
               {color: theme.colors.textPrimary},
             ]}>
             Remind me on due date
@@ -121,16 +132,15 @@ export function TaskFormFields({
               theme.typography.caption,
               {color: theme.colors.textSecondary},
             ]}>
-            Schedules a local notification. Works offline; permission optional.
+            Local notification — works offline. Permission is optional.
           </Text>
         </View>
       </Pressable>
 
       <Text
         style={[
-          styles.hint,
           theme.typography.caption,
-          {color: theme.colors.textSecondary},
+          {color: theme.colors.textTertiary},
         ]}>
         Saved on this device first. Sync runs when you are online.
       </Text>
@@ -139,9 +149,6 @@ export function TaskFormFields({
 }
 
 const styles = StyleSheet.create({
-  root: {
-    gap: 16,
-  },
   descriptionInput: {
     minHeight: 110,
     paddingTop: 12,
@@ -152,6 +159,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
+    minHeight: 72,
   },
   checkbox: {
     width: 24,
@@ -165,15 +173,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     lineHeight: 16,
-  },
-  reminderCopy: {
-    flex: 1,
-    gap: 2,
-  },
-  reminderTitle: {
-    fontWeight: '600',
-  },
-  hint: {
-    marginTop: -4,
   },
 });

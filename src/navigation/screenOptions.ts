@@ -12,6 +12,7 @@ export function createDefaultStackOptions(
     headerTintColor: theme.colors.primary,
     headerTitleStyle: {
       fontWeight: '600',
+      fontSize: 17,
       color: theme.colors.textPrimary,
     },
     headerShadowVisible: false,

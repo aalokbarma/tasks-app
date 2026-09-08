@@ -5,7 +5,7 @@ import type {Task} from '@features/tasks/types';
 import {formatTaskDate} from '@features/tasks/utils/formatTaskDate';
 import {useTheme} from '@theme/ThemeProvider';
 
-export const TASK_ROW_HEIGHT = 88;
+export const TASK_ROW_HEIGHT = 92;
 
 export interface TaskListItemProps {
   task: Task;
@@ -20,20 +20,23 @@ function TaskListItemComponent({
 }: TaskListItemProps) {
   const {theme} = useTheme();
   const dueLabel = formatTaskDate(task.dueAt);
+  const pendingSync = task.syncStatus !== 'synced';
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${task.completed ? 'Completed' : 'Incomplete'} task: ${task.title}`}
+      accessibilityLabel={`${task.completed ? 'Completed' : 'Incomplete'} task: ${task.title}${pendingSync ? ', saved on this device' : ''}`}
       accessibilityHint="Opens task details"
       onPress={() => onPress(task.id)}
       style={({pressed}) => [
         styles.row,
         {
+          height: TASK_ROW_HEIGHT,
           backgroundColor: theme.colors.surface,
           borderColor: theme.colors.border,
           borderRadius: theme.radii.lg,
           marginHorizontal: theme.spacing.md,
+          marginBottom: theme.spacing.sm + 2,
           opacity: pressed ? 0.92 : 1,
         },
         theme.shadows.sm,
@@ -48,13 +51,15 @@ function TaskListItemComponent({
         onPress={() => onToggleCompleted(task.id)}
         style={[
           styles.checkbox,
-          {borderRadius: theme.radii.sm},
-          task.completed
-            ? {
-                borderColor: theme.colors.primary,
-                backgroundColor: theme.colors.primary,
-              }
-            : [styles.checkboxUnchecked, {borderColor: theme.colors.border}],
+          {
+            borderRadius: theme.radii.sm,
+            borderColor: task.completed
+              ? theme.colors.primary
+              : theme.colors.borderStrong,
+            backgroundColor: task.completed
+              ? theme.colors.primary
+              : 'transparent',
+          },
         ]}>
         {task.completed ? (
           <Text
@@ -64,42 +69,55 @@ function TaskListItemComponent({
         ) : null}
       </Pressable>
 
-      <View style={styles.content}>
+      <View style={[styles.content, {gap: theme.spacing.xs}]}>
         <Text
           numberOfLines={1}
           style={[
-            styles.title,
-            theme.typography.body,
-            {color: theme.colors.textPrimary},
-            task.completed ? styles.titleCompleted : null,
+            theme.typography.bodyStrong,
+            {
+              color: theme.colors.textPrimary,
+              textDecorationLine: task.completed ? 'line-through' : 'none',
+              opacity: task.completed ? 0.62 : 1,
+            },
           ]}>
           {task.title}
         </Text>
         <View style={styles.metaRow}>
-          {dueLabel ? (
-            <Text
-              style={[
-                styles.meta,
-                theme.typography.caption,
-                {color: theme.colors.textSecondary},
-              ]}>
-              Due {dueLabel}
-            </Text>
-          ) : (
-            <Text
-              style={[
-                styles.meta,
-                theme.typography.caption,
-                {color: theme.colors.textSecondary},
-              ]}>
-              No due date
-            </Text>
-          )}
-          {task.syncStatus !== 'synced' ? (
+          <Text
+            numberOfLines={1}
+            style={[
+              theme.typography.caption,
+              {color: theme.colors.textSecondary, flexShrink: 1},
+            ]}>
+            {dueLabel ? `Due ${dueLabel}` : 'No due date'}
+          </Text>
+          {pendingSync ? (
             <View
               accessibilityLabel="Saved on this device, waiting to sync"
-              style={[styles.pendingDot, {backgroundColor: theme.colors.primary}]}
-            />
+              style={[
+                styles.pendingChip,
+                {
+                  backgroundColor: theme.colors.primaryMuted,
+                  borderRadius: theme.radii.full,
+                },
+              ]}>
+              <View
+                style={[
+                  styles.pendingDot,
+                  {
+                    backgroundColor: theme.colors.primary,
+                    borderRadius: theme.radii.full,
+                  },
+                ]}
+              />
+              <Text
+                style={[
+                  theme.typography.caption,
+                  {color: theme.colors.primary, fontWeight: '600'},
+                ]}>
+                Local
+              </Text>
+            </View>
           ) : null}
         </View>
       </View>
@@ -127,13 +145,11 @@ export const TaskListItem = memo(TaskListItemComponent, propsAreEqual);
 
 const styles = StyleSheet.create({
   row: {
-    height: TASK_ROW_HEIGHT,
-    marginBottom: 10,
     borderWidth: 1,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
   },
   checkbox: {
     width: 28,
@@ -142,24 +158,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkboxUnchecked: {
-    backgroundColor: 'transparent',
-  },
   checkmark: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     lineHeight: 18,
   },
   content: {
     flex: 1,
-    gap: 4,
-  },
-  title: {
-    fontWeight: '600',
-  },
-  titleCompleted: {
-    textDecorationLine: 'line-through',
-    opacity: 0.65,
   },
   metaRow: {
     flexDirection: 'row',
@@ -167,12 +172,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 8,
   },
-  meta: {
-    flexShrink: 1,
+  pendingChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
   pendingDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
   },
 });

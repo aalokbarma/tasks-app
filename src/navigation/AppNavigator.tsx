@@ -1,7 +1,8 @@
-import {Pressable, StyleSheet, Text} from 'react-native';
+import {HeaderTextButton} from '@components/ui/HeaderTextButton';
 import {lazy, Suspense} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {View} from 'react-native';
 
 import {useTheme} from '@theme/ThemeProvider';
 
@@ -41,58 +42,23 @@ const SettingsScreen = lazy(() =>
 
 const Stack = createNativeStackNavigator<AppNavigatorParamList>();
 
-function TaskListAccountButton() {
-  const navigation = useNavigation<AppNavigationProp<'TaskList'>>();
-  const {theme} = useTheme();
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel="Open account settings"
-      hitSlop={8}
-      onPress={() => navigation.navigate('Settings')}
-      style={styles.headerButton}>
-      <Text
-        style={[
-          styles.headerButtonLabel,
-          theme.typography.body,
-          {color: theme.colors.primary},
-        ]}>
-        Account
-      </Text>
-    </Pressable>
-  );
-}
-
-function TaskListCreateButton() {
-  const navigation = useNavigation<AppNavigationProp<'TaskList'>>();
-  const {theme} = useTheme();
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel="Create task"
-      hitSlop={8}
-      onPress={() => navigation.navigate('CreateTask')}
-      style={styles.headerButton}>
-      <Text
-        style={[
-          styles.headerButtonLabel,
-          theme.typography.body,
-          {color: theme.colors.primary},
-        ]}>
-        New
-      </Text>
-    </Pressable>
-  );
-}
-
 function TaskListHeaderRight() {
+  const navigation = useNavigation<AppNavigationProp<'TaskList'>>();
+
   return (
-    <>
-      <TaskListCreateButton />
-      <TaskListAccountButton />
-    </>
+    <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+      <HeaderTextButton
+        label="New"
+        prominence="strong"
+        accessibilityLabel="Create task"
+        onPress={() => navigation.navigate('CreateTask')}
+      />
+      <HeaderTextButton
+        label="Account"
+        accessibilityLabel="Open account settings"
+        onPress={() => navigation.navigate('Settings')}
+      />
+    </View>
   );
 }
 
@@ -154,13 +120,3 @@ export function AppNavigator() {
     </Suspense>
   );
 }
-
-const styles = StyleSheet.create({
-  headerButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  headerButtonLabel: {
-    fontWeight: '600',
-  },
-});

@@ -1,6 +1,5 @@
 import {useCallback, useEffect, useState} from 'react';
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -13,8 +12,12 @@ import {Button} from '@components/ui/Button';
 import {EmptyState} from '@components/ui/EmptyState';
 import {FormErrorBanner} from '@components/ui/FormErrorBanner';
 import {HeaderTextButton} from '@components/ui/HeaderTextButton';
+import {LoadingState} from '@components/ui/LoadingState';
 import {ConnectivityStatusBar} from '@components/ui/ConnectivityStatusBar';
-import {ScreenContainer} from '@components/layout/ScreenContainer';
+import {
+  ScreenContainer,
+  SCREEN_EDGES_BELOW_HEADER,
+} from '@components/layout/ScreenContainer';
 import {TaskFormFields} from '@features/tasks/components/TaskFormFields';
 import {useTaskById} from '@features/tasks/hooks/useTaskById';
 import {useTasksController} from '@features/tasks/hooks/useTasksController';
@@ -68,19 +71,6 @@ export function EditTaskScreen() {
 
   const busy = isSaving || isSubmitting;
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <HeaderTextButton
-          label="Cancel"
-          disabled={busy}
-          accessibilityLabel="Cancel edit"
-          onPress={() => navigation.goBack()}
-        />
-      ),
-    });
-  }, [busy, navigation]);
-
   const handleChange = useCallback((patch: Partial<TaskFormValues>) => {
     setValues(current => (current ? {...current, ...patch} : current));
     setErrors(current => {
@@ -125,20 +115,42 @@ export function EditTaskScreen() {
     }
   }, [busy, navigation, taskId, update, values]);
 
+  useEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        <HeaderTextButton
+          label="Cancel"
+          disabled={busy}
+          accessibilityLabel="Cancel edit"
+          onPress={() => navigation.goBack()}
+        />
+      ),
+      headerRight: () => (
+        <HeaderTextButton
+          label="Save"
+          prominence="strong"
+          disabled={busy || !values}
+          accessibilityLabel="Save changes"
+          onPress={() => {
+            handleSubmit().catch(() => undefined);
+          }}
+        />
+      ),
+    });
+  }, [busy, handleSubmit, navigation, values]);
+
   if (isBootstrapping || (isLoading && !task)) {
     return (
-      <ScreenContainer>
+      <ScreenContainer edges={SCREEN_EDGES_BELOW_HEADER}>
         <ConnectivityStatusBar />
-        <View style={styles.centered}>
-          <ActivityIndicator color={theme.colors.primary} />
-        </View>
+        <LoadingState label="Loading task…" />
       </ScreenContainer>
     );
   }
 
   if (!task || !values) {
     return (
-      <ScreenContainer>
+      <ScreenContainer edges={SCREEN_EDGES_BELOW_HEADER}>
         <ConnectivityStatusBar />
         <EmptyState
           title="Task not found"
@@ -151,16 +163,22 @@ export function EditTaskScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer edges={SCREEN_EDGES_BELOW_HEADER}>
       <ConnectivityStatusBar />
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           contentContainerStyle={[
             styles.content,
-            {padding: theme.spacing.lg},
+            {
+              padding: theme.spacing.lg,
+              gap: theme.spacing.md,
+              paddingBottom: theme.spacing.xxl,
+            },
           ]}>
           <FormErrorBanner
             message={errorMessage}
@@ -172,7 +190,7 @@ export function EditTaskScreen() {
             editable={!busy}
             onChange={handleChange}
           />
-          <View style={styles.actions}>
+          <View style={{marginTop: theme.spacing.sm}}>
             <Button
               label="Save changes"
               onPress={handleSubmit}
@@ -191,17 +209,7 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   content: {
     flexGrow: 1,
-    gap: 16,
-    paddingBottom: 40,
-  },
-  actions: {
-    marginTop: 8,
   },
 });

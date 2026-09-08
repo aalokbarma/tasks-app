@@ -12,7 +12,10 @@ import {Button} from '@components/ui/Button';
 import {FormErrorBanner} from '@components/ui/FormErrorBanner';
 import {HeaderTextButton} from '@components/ui/HeaderTextButton';
 import {ConnectivityStatusBar} from '@components/ui/ConnectivityStatusBar';
-import {ScreenContainer} from '@components/layout/ScreenContainer';
+import {
+  ScreenContainer,
+  SCREEN_EDGES_BELOW_HEADER,
+} from '@components/layout/ScreenContainer';
 import {TaskFormFields} from '@features/tasks/components/TaskFormFields';
 import {useTasksController} from '@features/tasks/hooks/useTasksController';
 import {
@@ -35,19 +38,6 @@ export function CreateTaskScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const busy = isSaving || isSubmitting;
-
-  useEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <HeaderTextButton
-          label="Cancel"
-          disabled={busy}
-          accessibilityLabel="Cancel create task"
-          onPress={() => navigation.goBack()}
-        />
-      ),
-    });
-  }, [busy, navigation]);
 
   const handleChange = useCallback((patch: Partial<TaskFormValues>) => {
     setValues(current => ({...current, ...patch}));
@@ -93,17 +83,47 @@ export function CreateTaskScreen() {
     }
   }, [busy, create, navigation, values]);
 
+  useEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        <HeaderTextButton
+          label="Cancel"
+          disabled={busy}
+          accessibilityLabel="Cancel create task"
+          onPress={() => navigation.goBack()}
+        />
+      ),
+      headerRight: () => (
+        <HeaderTextButton
+          label="Save"
+          prominence="strong"
+          disabled={busy}
+          accessibilityLabel="Save task"
+          onPress={() => {
+            handleSubmit().catch(() => undefined);
+          }}
+        />
+      ),
+    });
+  }, [busy, handleSubmit, navigation]);
+
   return (
-    <ScreenContainer>
+    <ScreenContainer edges={SCREEN_EDGES_BELOW_HEADER}>
       <ConnectivityStatusBar />
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           contentContainerStyle={[
             styles.content,
-            {padding: theme.spacing.lg},
+            {
+              padding: theme.spacing.lg,
+              gap: theme.spacing.md,
+              paddingBottom: theme.spacing.xxl,
+            },
           ]}>
           <FormErrorBanner
             message={errorMessage}
@@ -115,7 +135,7 @@ export function CreateTaskScreen() {
             editable={!busy}
             onChange={handleChange}
           />
-          <View style={styles.actions}>
+          <View style={{marginTop: theme.spacing.sm}}>
             <Button
               label="Save task"
               onPress={handleSubmit}
@@ -136,10 +156,5 @@ const styles = StyleSheet.create({
   },
   content: {
     flexGrow: 1,
-    gap: 16,
-    paddingBottom: 40,
-  },
-  actions: {
-    marginTop: 8,
   },
 });
