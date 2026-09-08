@@ -23,20 +23,30 @@ import {
   runSynchronization,
 } from '@features/sync/slice/syncThunks';
 import {loadTasks} from '@features/tasks/slice/tasksThunks';
+import {
+  bootstrapLocalReminders,
+  registerPushForUser,
+} from '@features/notifications/services/notificationBootstrap';
+import {subscribeForegroundMessages} from '@services/notifications/fcmHandlers';
 import {toISODateString} from '@utils/date';
 import type {UniqueId} from '@app-types/common';
 import {
   getConnectivityService,
   registerSyncManager,
   requireAuthRepository,
+  requireLocalNotificationService,
+  requirePushNotificationService,
   requireSyncManager,
   requireSyncQueueRepository,
+  requireTaskReminderCoordinator,
   requireTaskRemoteDataSource,
   requireTaskRepository,
 } from '@store/dependencies';
 
 let stopNetworkMonitor: (() => void) | null = null;
 let stopAuthMonitor: (() => void) | null = null;
+let stopForegroundMessages: (() => void) | null = null;
+let stopTokenRefresh: (() => void) | null = null;
 let lastObservedUserId: UniqueId | null | undefined;
 let syncManagerStarted = false;
 
@@ -53,6 +63,7 @@ export async function bootstrapAppState(dispatch: AppDispatch): Promise<void> {
 
   startAuthSessionObserver(dispatch);
   await ensureSyncManager(dispatch);
+  startForegroundMessageListener();
 
   await dispatch(refreshNetworkStatus());
 
@@ -68,6 +79,40 @@ export async function bootstrapAppState(dispatch: AppDispatch): Promise<void> {
   } catch {
     // Database may still be initializing; pending count refreshes after local persistence is ready.
   }
+
+  if (lastObservedUserId) {
+    await bootstrapNotificationsForUser(lastObservedUserId);
+  }
+}
+
+async function bootstrapNotificationsForUser(userId: UniqueId): Promise<void> {
+  stopTokenRefresh?.();
+  stopTokenRefresh = null;
+
+  await bootstrapLocalReminders({
+    local: requireLocalNotificationService(),
+    coordinator: requireTaskReminderCoordinator(),
+    loadTasks: async () => {
+      try {
+        return await requireTaskRepository().getAll(userId);
+      } catch {
+        return [];
+      }
+    },
+  });
+
+  stopTokenRefresh = await registerPushForUser({
+    push: requirePushNotificationService(),
+    userId,
+  });
+}
+
+function startForegroundMessageListener(): void {
+  if (stopForegroundMessages) {
+    return;
+  }
+
+  stopForegroundMessages = subscribeForegroundMessages();
 }
 
 async function ensureSyncManager(dispatch: AppDispatch): Promise<void> {
@@ -139,14 +184,24 @@ function startAuthSessionObserver(dispatch: AppDispatch): void {
 
     if (previousUserId) {
       clearUserScopedApplicationState(dispatch);
+      stopTokenRefresh?.();
+      stopTokenRefresh = null;
+      requireLocalNotificationService()
+        .cancelAll()
+        .catch(() => undefined);
     }
 
     lastObservedUserId = nextUserId;
     dispatch(setAuthUser(session.user));
 
-    if (nextUserId && syncManagerStarted) {
+    if (nextUserId) {
       dispatch(refreshPendingSyncCount());
-      dispatch(runSynchronization());
+      if (syncManagerStarted) {
+        dispatch(runSynchronization());
+      }
+      bootstrapNotificationsForUser(nextUserId).catch(error => {
+        console.error('[notifications] User bootstrap failed.', error);
+      });
     }
   });
 }
@@ -165,6 +220,11 @@ export function teardownAuthMonitoring(): void {
 export function teardownAppObservers(): void {
   teardownNetworkMonitoring();
   teardownAuthMonitoring();
+
+  stopForegroundMessages?.();
+  stopForegroundMessages = null;
+  stopTokenRefresh?.();
+  stopTokenRefresh = null;
 
   if (syncManagerStarted) {
     requireSyncManager()

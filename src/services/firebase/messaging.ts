@@ -1,6 +1,6 @@
 import {
+  arrayUnion,
   doc,
-  FieldValue,
   getFirestore,
   setDoc,
 } from '@react-native-firebase/firestore';
@@ -11,6 +11,9 @@ import {
   onTokenRefresh,
   requestPermission,
 } from '@react-native-firebase/messaging';
+import notifee, {
+  AuthorizationStatus as NotifeeAuthorizationStatus,
+} from '@notifee/react-native';
 import {Platform} from 'react-native';
 
 import type {UniqueId} from '@app-types/common';
@@ -25,16 +28,35 @@ import {
 
 export type FirebaseMessagingService = PushNotificationService;
 
-async function requestIosPermissionIfNeeded(): Promise<boolean> {
-  if (Platform.OS !== 'ios') {
+async function requestNotificationPermission(): Promise<boolean> {
+  // Android 13+ POST_NOTIFICATIONS via Notifee; iOS via Messaging + Notifee.
+  try {
+    const settings = await notifee.requestPermission();
+    const notifeeOk =
+      settings.authorizationStatus === NotifeeAuthorizationStatus.AUTHORIZED ||
+      settings.authorizationStatus === NotifeeAuthorizationStatus.PROVISIONAL;
+
+    if (Platform.OS === 'ios') {
+      const authStatus = await requestPermission(getMessaging());
+      const messagingOk =
+        authStatus === AuthorizationStatus.AUTHORIZED ||
+        authStatus === AuthorizationStatus.PROVISIONAL;
+      return notifeeOk && messagingOk;
+    }
+
+    return notifeeOk;
+  } catch {
+    if (Platform.OS === 'ios') {
+      const authStatus = await requestPermission(getMessaging());
+      return (
+        authStatus === AuthorizationStatus.AUTHORIZED ||
+        authStatus === AuthorizationStatus.PROVISIONAL
+      );
+    }
+
+    // Android: treat as permitted when Notifee is unavailable (pre-13).
     return true;
   }
-
-  const authStatus = await requestPermission(getMessaging());
-  return (
-    authStatus === AuthorizationStatus.AUTHORIZED ||
-    authStatus === AuthorizationStatus.PROVISIONAL
-  );
 }
 
 export function createFirebaseMessagingService(): FirebaseMessagingService {
@@ -42,7 +64,7 @@ export function createFirebaseMessagingService(): FirebaseMessagingService {
     async requestPermission(): Promise<boolean> {
       try {
         ensureFirebaseReady(getFirebaseAppHandle().ready);
-        return await requestIosPermissionIfNeeded();
+        return await requestNotificationPermission();
       } catch (error) {
         throw mapMessagingError(error);
       }
@@ -52,14 +74,16 @@ export function createFirebaseMessagingService(): FirebaseMessagingService {
       try {
         ensureFirebaseReady(getFirebaseAppHandle().ready);
 
-        const permitted = await requestIosPermissionIfNeeded();
+        const permitted = await requestNotificationPermission();
         if (!permitted) {
           return null;
         }
 
         return await getToken(getMessaging());
       } catch (error) {
-        throw mapMessagingError(error);
+        // Graceful: push is bonus; app works without a token.
+        console.error('[firebase/messaging] getDeviceToken failed.', error);
+        return null;
       }
     },
 
@@ -81,7 +105,7 @@ export function createFirebaseMessagingService(): FirebaseMessagingService {
         await setDoc(
           doc(getFirestore(), 'users', userId),
           {
-            fcmTokens: FieldValue.arrayUnion(token),
+            fcmTokens: arrayUnion(token),
             updatedAt: new Date().toISOString(),
           },
           {merge: true},

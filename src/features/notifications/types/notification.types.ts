@@ -13,7 +13,7 @@ export interface NotificationPermissionStatus {
 }
 
 /**
- * Local notification scheduling contract (Notifee adapter later).
+ * Local notification scheduling contract (Notifee adapter).
  */
 export interface LocalNotificationService {
   requestPermission(): Promise<NotificationPermissionStatus>;

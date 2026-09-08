@@ -6,3 +6,4 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 // resolves them once (a factory that re-requires the mock path can recurse).
 jest.mock('@react-native-community/netinfo');
 jest.mock('react-native-nitro-sqlite');
+jest.mock('@notifee/react-native');

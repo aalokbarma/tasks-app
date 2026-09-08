@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
 
 import {TextField} from '@components/ui/TextField';
 import {useTheme} from '@theme/ThemeProvider';
@@ -19,6 +19,7 @@ export function TaskFormFields({
   onChange,
 }: TaskFormFieldsProps) {
   const {theme} = useTheme();
+  const reminderEnabled = Boolean(values.dueDate.trim());
 
   return (
     <View style={styles.root}>
@@ -46,7 +47,14 @@ export function TaskFormFields({
       <TextField
         label="Due date (YYYY-MM-DD)"
         value={values.dueDate}
-        onChangeText={dueDate => onChange({dueDate})}
+        onChangeText={dueDate =>
+          onChange({
+            dueDate,
+            remindOnDueDate: dueDate.trim()
+              ? values.remindOnDueDate
+              : false,
+          })
+        }
         error={errors.dueDate}
         editable={editable}
         autoCapitalize="none"
@@ -55,6 +63,67 @@ export function TaskFormFields({
         placeholder="Optional"
         accessibilityLabel="Due date"
       />
+
+      <Pressable
+        accessibilityRole="checkbox"
+        accessibilityState={{
+          checked: values.remindOnDueDate,
+          disabled: !editable || !reminderEnabled,
+        }}
+        accessibilityLabel="Remind me on the due date"
+        disabled={!editable || !reminderEnabled}
+        onPress={() =>
+          onChange({remindOnDueDate: !values.remindOnDueDate})
+        }
+        style={[
+          styles.reminderRow,
+          {
+            borderColor: theme.colors.border,
+            backgroundColor: theme.colors.surface,
+            opacity: !reminderEnabled || !editable ? 0.55 : 1,
+          },
+        ]}>
+        <View
+          style={[
+            styles.checkbox,
+            {
+              borderColor: values.remindOnDueDate
+                ? theme.colors.primary
+                : theme.colors.border,
+              backgroundColor: values.remindOnDueDate
+                ? theme.colors.primary
+                : 'transparent',
+            },
+          ]}>
+          {values.remindOnDueDate ? (
+            <Text
+              style={[
+                styles.checkmark,
+                {color: theme.colors.primaryContrast},
+              ]}>
+              ✓
+            </Text>
+          ) : null}
+        </View>
+        <View style={styles.reminderCopy}>
+          <Text
+            style={[
+              styles.reminderTitle,
+              theme.typography.body,
+              {color: theme.colors.textPrimary},
+            ]}>
+            Remind me on due date
+          </Text>
+          <Text
+            style={[
+              theme.typography.caption,
+              {color: theme.colors.textSecondary},
+            ]}>
+            Schedules a local notification. Works offline; permission optional.
+          </Text>
+        </View>
+      </Pressable>
+
       <Text
         style={[
           styles.hint,
@@ -74,6 +143,35 @@ const styles = StyleSheet.create({
   descriptionInput: {
     minHeight: 110,
     paddingTop: 12,
+  },
+  reminderRow: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  checkmark: {
+    fontSize: 14,
+    fontWeight: '700',
+    lineHeight: 16,
+  },
+  reminderCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  reminderTitle: {
+    fontWeight: '600',
   },
   hint: {
     marginTop: -4,

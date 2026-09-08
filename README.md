@@ -4,7 +4,7 @@ Cross-platform task management app (React Native CLI + TypeScript) for a team-le
 
 ## Current status
 
-Scaffold, multi-env config, Firebase adapters, SQLite offline persistence, Redux Toolkit, email/password authentication, React Navigation, offline-first task CRUD, and the **offline→online SyncManager** are in place. Local notifications are still upcoming.
+Scaffold, multi-env config, Firebase adapters, SQLite offline persistence, Redux Toolkit, email/password authentication, React Navigation, offline-first task CRUD, SyncManager, **local task reminders (Notifee)**, and **FCM client infrastructure** are in place.
 
 ## Architecture
 
@@ -20,9 +20,45 @@ UI (screens/components)
 - **Firestore** (`users/{userId}/tasks/{taskId}`) is the remote source of truth for cross-device sync.
 - **Auth** uses an `AuthRepository` port (Firebase adapter underneath). Screens never import Firebase.
 - **SyncManager** watches NetInfo; when connectivity returns it pushes the durable outbox, pulls remote tasks, and reconciles without wiping dirty local rows.
+- **Notifications** live in services (`LocalNotificationService`, `TaskReminderCoordinator`, FCM handlers) — screens never call Notifee/FCM directly.
 - **Redux slices**: `auth`, `tasks`, `network`, `theme`, `sync`.
 - **redux-persist** whitelists only `auth.rememberedEmail` and `theme.mode`.
 - Task queries and Firestore paths are always scoped by the signed-in `userId`.
+
+### Local task reminders (Notifee)
+
+When creating/editing a task with **Remind on due date** enabled:
+
+1. Task thunks call `TaskReminderCoordinator.syncReminderForTask` after SQLite write.
+2. Coordinator schedules or cancels a Notifee trigger with stable id `task-reminder:{taskId}` (upsert → no duplicates).
+3. Permission is requested via Notifee (Android 13+ `POST_NOTIFICATIONS`, iOS alert/sound/badge). Denial is a no-op — CRUD still works.
+4. Completed, deleted, past, or reminder-cleared tasks cancel their notification.
+5. Login bootstraps permission + reschedules all active reminders; logout cancels all local notifications.
+
+Android channel: `task-reminders` (HIGH). Manifest includes `POST_NOTIFICATIONS`, boot, vibrate, and exact-alarm permissions.
+
+### FCM (bonus client infrastructure)
+
+Client-only — **no Admin SDK / service-account keys in the app**.
+
+| Piece | Where |
+|-------|--------|
+| Permission + device token | `PushNotificationService` → `createFirebaseMessagingService()` |
+| Token ↔ user | `users/{uid}.fcmTokens` (`arrayUnion`) |
+| Foreground messages | `subscribeForegroundMessages()` (bootstrap) |
+| Background messages | `registerBackgroundMessageHandler()` in `index.js` |
+| Display | Notifee channel `fcm-messages` |
+
+**Still required outside the app** (Firebase Console / server):
+
+1. Enable **Cloud Messaging** on the Firebase project.
+2. Add `google-services.json` / `GoogleService-Info.plist` (already documented).
+3. **iOS:** upload an APNs Auth Key (or certificates) in Firebase Console → Project settings → Cloud Messaging; enable Push Notifications capability in Xcode.
+4. **Android:** default FCM works with Google Services; ensure Play Services on device/emulator.
+5. **Sending:** a trusted backend (Cloud Functions, Admin SDK, or HTTP v1 API) reads `fcmTokens` and sends messages. Never embed server credentials in the mobile binary.
+6. Deploy updated [`firestore.rules`](./firestore.rules) so owners can write `fcmTokens` / `updatedAt` on `users/{userId}`.
+
+See [`firebase/README.md`](./firebase/README.md) for native setup detail.
 
 ### Offline → online sync
 
@@ -202,22 +238,19 @@ npm test
 
 | Area | Packages |
 |------|----------|
-| Navigation | `@react-navigation/native`, `native-stack`, `screens`, `gesture-handler` (`2.32.0+`, Kotlin 2.2 fix), `safe-area-context` |
+| Navigation | `@react-navigation/native`, `native-stack`, `screens`, `gesture-handler`, `safe-area-context` |
 | State | `@reduxjs/toolkit`, `react-redux`, `redux-persist` |
 | Config | `react-native-config` |
+| Offline | `@react-native-community/netinfo`, `react-native-nitro-sqlite` |
+| Notifications | `@notifee/react-native`, `@react-native-firebase/messaging` |
 | IDs | `uuid` |
-
-Deferred installs (next phases): `@notifee/react-native`, `@react-native-community/netinfo`, Firestore sync engine.
-
-Installed infrastructure:
-- Firebase: `@react-native-firebase/app|auth|firestore|messaging` (`26.4.0`)
-- SQLite: `react-native-nitro-sqlite` + `react-native-nitro-modules` (offline-first local source of truth)
+| Firebase | `@react-native-firebase/app\|auth\|firestore\|messaging` (`26.4.0`) |
 
 ## Limitations
 
-- No Firebase Auth / SQLite / sync / notification behavior yet.
+- Remote FCM **send** path is server-side only (tokens are stored; no in-app Admin SDK).
 - Empty Firebase env values are valid for scaffold; `getAppConfig().firebase` stays `null` until filled.
-- After changing the Podfile, run `bundle exec pod install --project-directory=ios`.
+- After adding native modules (Notifee / Messaging), run `bundle exec pod install --project-directory=ios`.
 
 ## First-time setup
 

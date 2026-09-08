@@ -10,7 +10,10 @@ import type {ISODateString, UniqueId} from '@app-types/common';
 import {toISODateString} from '@utils/date';
 import {refreshPendingSyncCount} from '@features/sync/slice/syncThunks';
 
-import {requireTaskUseCases} from '@store/dependencies';
+import {
+  requireTaskReminderCoordinator,
+  requireTaskUseCases,
+} from '@store/dependencies';
 import type {RootState} from '@store/rootReducer';
 
 function toErrorMessage(error: unknown, fallback: string): string {
@@ -52,6 +55,7 @@ export const createTask = createAsyncThunk<
   try {
     const userId = requireUserId(getState());
     const task = await requireTaskUseCases().createTask(userId, input);
+    await requireTaskReminderCoordinator().syncReminderForTask(task);
     await dispatch(refreshPendingSyncCount());
     return task;
   } catch (error) {
@@ -67,6 +71,7 @@ export const updateTask = createAsyncThunk<
   try {
     const userId = requireUserId(getState());
     const task = await requireTaskUseCases().updateTask(userId, input);
+    await requireTaskReminderCoordinator().syncReminderForTask(task);
     await dispatch(refreshPendingSyncCount());
     return task;
   } catch (error) {
@@ -82,6 +87,7 @@ export const deleteTask = createAsyncThunk<
   try {
     const userId = requireUserId(getState());
     await requireTaskUseCases().deleteTask(userId, taskId);
+    await requireTaskReminderCoordinator().cancelReminder(taskId);
     await dispatch(refreshPendingSyncCount());
     return taskId;
   } catch (error) {
@@ -99,6 +105,7 @@ export const toggleTaskCompleted = createAsyncThunk<
     try {
       const userId = requireUserId(getState());
       const task = await requireTaskUseCases().toggleCompleted(userId, taskId);
+      await requireTaskReminderCoordinator().syncReminderForTask(task);
       await dispatch(refreshPendingSyncCount());
       return task;
     } catch (error) {

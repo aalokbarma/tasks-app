@@ -1,6 +1,11 @@
 import {getAppDependencies} from '@app/dependencies';
 import type {AuthRepository} from '@features/auth/repositories/AuthRepository';
 import type {AuthService} from '@features/auth/types';
+import type {TaskReminderCoordinator} from '@features/notifications/services/taskReminderCoordinator';
+import type {
+  LocalNotificationService,
+  PushNotificationService,
+} from '@features/notifications/types';
 import type {TaskRepository} from '@features/tasks/repositories/TaskRepository';
 import {createTaskUseCases} from '@features/tasks/services/taskUseCases';
 import type {TaskUseCases} from '@features/tasks/services/taskUseCases';
@@ -48,6 +53,18 @@ export function requireSyncQueueRepository(): SyncQueueRepository {
   }
 
   return repository;
+}
+
+export function requireLocalNotificationService(): LocalNotificationService {
+  return getAppDependencies().localNotificationService;
+}
+
+export function requirePushNotificationService(): PushNotificationService {
+  return getAppDependencies().pushNotificationService;
+}
+
+export function requireTaskReminderCoordinator(): TaskReminderCoordinator {
+  return getAppDependencies().taskReminderCoordinator;
 }
 
 let connectivityService: ConnectivityService | null = null;

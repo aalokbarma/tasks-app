@@ -1,10 +1,18 @@
 import type {AuthService} from '@features/auth/types';
 import type {AuthRepository} from '@features/auth/repositories/AuthRepository';
 import {createAuthRepository} from '@features/auth/services/createAuthRepository';
-import type {PushNotificationService} from '@features/notifications/types';
+import type {
+  LocalNotificationService,
+  PushNotificationService,
+} from '@features/notifications/types';
+import {
+  createTaskReminderCoordinator,
+  type TaskReminderCoordinator,
+} from '@features/notifications/services/taskReminderCoordinator';
 import type {TaskRemoteDataSource} from '@features/tasks/services/TaskRemoteDataSource';
 import type {TaskRepository} from '@features/tasks/repositories/TaskRepository';
 import type {SyncQueueRepository} from '@features/sync/types';
+import {createLocalNotificationService} from '@services/notifications/localNotifications';
 
 import {
   createSqliteSyncQueueRepository,
@@ -36,6 +44,8 @@ export interface AppDependencies {
   readonly firestoreService: FirestoreService;
   readonly taskRemoteDataSource: TaskRemoteDataSource;
   readonly pushNotificationService: PushNotificationService;
+  readonly localNotificationService: LocalNotificationService;
+  readonly taskReminderCoordinator: TaskReminderCoordinator;
   readonly database: DatabaseClient | null;
   readonly taskRepository: TaskRepository | null;
   readonly syncQueueRepository: SyncQueueRepository | null;
@@ -49,6 +59,7 @@ function createBaseDependencies(
   const firebaseApp = initializeFirebaseApp();
   const firestoreService = createFirestoreService();
   const authService = createFirebaseAuthService();
+  const localNotificationService = createLocalNotificationService();
 
   return {
     ready: firebaseApp.ready && database !== null,
@@ -58,6 +69,10 @@ function createBaseDependencies(
     firestoreService,
     taskRemoteDataSource: createFirestoreTaskRemoteDataSource(firestoreService),
     pushNotificationService: createFirebaseMessagingService(),
+    localNotificationService,
+    taskReminderCoordinator: createTaskReminderCoordinator(
+      localNotificationService,
+    ),
     database,
     taskRepository: database ? createSqliteTaskRepository(database) : null,
     syncQueueRepository: database

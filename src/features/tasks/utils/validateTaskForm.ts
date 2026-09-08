@@ -4,6 +4,8 @@ export interface TaskFormValues {
   title: string;
   description: string;
   dueDate: string;
+  /** When true and due date is set, schedules a local reminder at due time. */
+  remindOnDueDate: boolean;
 }
 
 export interface TaskFormErrors {
@@ -18,6 +20,7 @@ export function emptyTaskFormValues(): TaskFormValues {
     title: '',
     description: '',
     dueDate: '',
+    remindOnDueDate: true,
   };
 }
 
@@ -25,11 +28,13 @@ export function taskToFormValues(task: {
   title: string;
   description: string | null;
   dueAt: string | null;
+  reminderAt: string | null;
 }): TaskFormValues {
   return {
     title: task.title,
     description: task.description ?? '',
     dueDate: task.dueAt ? task.dueAt.slice(0, 10) : '',
+    remindOnDueDate: Boolean(task.reminderAt ?? task.dueAt),
   };
 }
 
@@ -75,6 +80,8 @@ export function validateTaskForm(
   }
 
   const description = values.description.trim();
+  const reminderAt =
+    dueAt && values.remindOnDueDate ? dueAt : null;
 
   return {
     valid: true,
@@ -82,6 +89,7 @@ export function validateTaskForm(
       title,
       description: description.length > 0 ? description : null,
       dueAt: dueAt ?? null,
+      reminderAt,
     },
   };
 }
@@ -104,6 +112,7 @@ export function toUpdateTaskInput(
       title: result.createInput.title,
       description: result.createInput.description,
       dueAt: result.createInput.dueAt,
+      reminderAt: result.createInput.reminderAt,
     },
   };
 }
