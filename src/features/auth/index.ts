@@ -1,6 +1,16 @@
-export {useAuthStatus, useCurrentUser} from './hooks/useAuth';
+export {
+  useAuthStatus,
+  useCurrentUser,
+  useRememberedEmail,
+  useIsAuthenticating,
+  useAuthError,
+} from './hooks/useAuth';
+export {useAuthController} from './hooks/useAuthController';
 export {LoginScreen} from './screens/LoginScreen';
 export {SignUpScreen} from './screens/SignUpScreen';
+export {AuthFormLayout} from './components/AuthFormLayout';
+export type {AuthRepository} from './repositories/AuthRepository';
+export {createAuthRepository} from './services/createAuthRepository';
 export {createAuthFacade} from './services/authFacade';
 export {
   authReducer,
@@ -12,6 +22,7 @@ export {
   setRememberedEmail,
 } from './slice/authSlice';
 export {
+  clearUserScopedApplicationState,
   hydrateAuthSession,
   signInWithEmail,
   signOutUser,

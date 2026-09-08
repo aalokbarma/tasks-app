@@ -1,8 +1,6 @@
-import type {AuthService} from '../types';
+import {createAuthRepository} from './createAuthRepository';
 
 /**
- * Thin composition helper. Business logic will wrap the injected AuthService.
+ * @deprecated Prefer createAuthRepository — kept for barrel compatibility.
  */
-export function createAuthFacade(authService: AuthService): AuthService {
-  return authService;
-}
+export const createAuthFacade = createAuthRepository;

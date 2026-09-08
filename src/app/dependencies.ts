@@ -1,4 +1,6 @@
 import type {AuthService} from '@features/auth/types';
+import type {AuthRepository} from '@features/auth/repositories/AuthRepository';
+import {createAuthRepository} from '@features/auth/services/createAuthRepository';
 import type {PushNotificationService} from '@features/notifications/types';
 import type {TaskRemoteDataSource} from '@features/tasks/services/TaskRemoteDataSource';
 import type {TaskRepository} from '@features/tasks/repositories/TaskRepository';
@@ -27,7 +29,10 @@ import {
 export interface AppDependencies {
   readonly ready: boolean;
   readonly firebaseApp: FirebaseAppHandle;
+  /** Raw Firebase auth adapter. Prefer authRepository in app code. */
   readonly authService: AuthService;
+  /** Validating feature-facing auth port used by thunks/UI. */
+  readonly authRepository: AuthRepository;
   readonly firestoreService: FirestoreService;
   readonly taskRemoteDataSource: TaskRemoteDataSource;
   readonly pushNotificationService: PushNotificationService;
@@ -43,11 +48,13 @@ function createBaseDependencies(
 ): AppDependencies {
   const firebaseApp = initializeFirebaseApp();
   const firestoreService = createFirestoreService();
+  const authService = createFirebaseAuthService();
 
   return {
     ready: firebaseApp.ready && database !== null,
     firebaseApp,
-    authService: createFirebaseAuthService(),
+    authService,
+    authRepository: createAuthRepository(authService),
     firestoreService,
     taskRemoteDataSource: createFirestoreTaskRemoteDataSource(firestoreService),
     pushNotificationService: createFirebaseMessagingService(),

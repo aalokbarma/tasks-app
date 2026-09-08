@@ -1,8 +1,11 @@
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, Pressable, StyleSheet, Text, View} from 'react-native';
 import {lazy, Suspense} from 'react';
+import {useNavigation} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
-import type {AppStackParamList} from './types';
+import {useTheme} from '@theme/ThemeProvider';
+
+import type {AppStackNavigationProp, AppStackParamList} from './types';
 
 const TaskListScreen = lazy(() =>
   import('@features/tasks/screens/TaskListScreen').then(module => ({
@@ -32,6 +35,29 @@ function LazyFallback() {
   );
 }
 
+function TaskListSettingsButton() {
+  const navigation = useNavigation<AppStackNavigationProp<'TaskList'>>();
+  const {theme} = useTheme();
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Open account settings"
+      hitSlop={8}
+      onPress={() => navigation.navigate('Settings')}
+      style={styles.headerButton}>
+      <Text
+        style={[
+          styles.headerButtonLabel,
+          theme.typography.body,
+          {color: theme.colors.primary},
+        ]}>
+        Account
+      </Text>
+    </Pressable>
+  );
+}
+
 export function AppStack() {
   return (
     <Suspense fallback={<LazyFallback />}>
@@ -39,7 +65,10 @@ export function AppStack() {
         <Stack.Screen
           name="TaskList"
           component={TaskListScreen}
-          options={{title: 'Tasks'}}
+          options={{
+            title: 'Tasks',
+            headerRight: TaskListSettingsButton,
+          }}
         />
         <Stack.Screen
           name="TaskForm"
@@ -61,5 +90,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerButton: {
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+  },
+  headerButtonLabel: {
+    fontWeight: '600',
   },
 });

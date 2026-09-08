@@ -11,7 +11,7 @@ import {
 import {persistor, store} from '@store/index';
 import {
   bootstrapAppState,
-  teardownNetworkMonitoring,
+  teardownAppObservers,
 } from '@store/bootstrap';
 import {useAppDispatch, useAppSelector} from '@store/hooks';
 import {selectThemeMode} from '@store/selectors';
@@ -50,7 +50,7 @@ function AppBootstrap({children}: PropsWithChildren) {
 
     return () => {
       cancelled = true;
-      teardownNetworkMonitoring();
+      teardownAppObservers();
     };
   }, [dispatch]);
 

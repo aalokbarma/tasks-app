@@ -4,7 +4,7 @@ Cross-platform task management app (React Native CLI + TypeScript) for a team-le
 
 ## Current status
 
-Scaffold, multi-env config, Firebase adapters, SQLite offline persistence, and **Redux Toolkit** app state are in place. Auth/task UI, Firestore sync engine, and notifications are still upcoming.
+Scaffold, multi-env config, Firebase adapters, SQLite offline persistence, Redux Toolkit, and **email/password authentication** (login, signup, logout, session restore) are in place. Task UI, Firestore sync engine, and notifications are still upcoming.
 
 ## Architecture
 
@@ -17,12 +17,14 @@ UI (screens/components)
 ```
 
 - **SQLite** is the offline source of truth for tasks; Redux holds a hydrated UI cache only (not a second full DB).
+- **Auth** uses an `AuthRepository` port (Firebase adapter underneath). Screens never import Firebase. Session restore shows a splash; `onAuthStateChanged` keeps Redux in sync. Logout clears user-scoped Redux state (tasks/sync).
 - **Redux slices**: `auth`, `tasks`, `network`, `theme`, `sync` — typed `RootState` / `AppDispatch` / `useAppDispatch` / `useAppSelector`.
 - **redux-persist** whitelists only lightweight prefs (`auth.rememberedEmail`, `theme.mode`); task lists are not persisted in Redux.
 - **Firestore** is reached only through remote data-source adapters under `services/firebase` — never from the tasks feature UI module.
 - **Auth / App stacks** are selected from Redux auth status.
 - Screens are **lazy-loaded** via `React.lazy` + `Suspense`.
 - **Firebase config** is loaded exclusively from environment variables via `react-native-config`.
+- Task queries are always scoped by the signed-in `userId`.
 
 ## Folder structure
 

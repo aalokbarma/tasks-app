@@ -97,6 +97,10 @@ const authSlice = createSlice({
         state.status = 'error';
         state.errorMessage = action.payload ?? 'Sign up failed.';
       })
+      .addCase(signOutUser.pending, state => {
+        state.isAuthenticating = true;
+        state.errorMessage = null;
+      })
       .addCase(signOutUser.fulfilled, state => {
         state.user = null;
         state.status = 'unauthenticated';
@@ -104,6 +108,7 @@ const authSlice = createSlice({
         state.isAuthenticating = false;
       })
       .addCase(signOutUser.rejected, (state, action) => {
+        state.isAuthenticating = false;
         state.errorMessage = action.payload ?? 'Sign out failed.';
       });
   },

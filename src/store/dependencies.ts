@@ -1,8 +1,9 @@
 import {getAppDependencies} from '@app/dependencies';
+import type {AuthRepository} from '@features/auth/repositories/AuthRepository';
+import type {AuthService} from '@features/auth/types';
 import type {TaskRepository} from '@features/tasks/repositories/TaskRepository';
 import {createTaskUseCases} from '@features/tasks/services/taskUseCases';
 import type {TaskUseCases} from '@features/tasks/services/taskUseCases';
-import type {AuthService} from '@features/auth/types';
 import type {SyncQueueRepository} from '@features/sync/types';
 import {
   createConnectivityService,
@@ -11,6 +12,10 @@ import {
 
 export function requireAuthService(): AuthService {
   return getAppDependencies().authService;
+}
+
+export function requireAuthRepository(): AuthRepository {
+  return getAppDependencies().authRepository;
 }
 
 export function requireTaskRepository(): TaskRepository {

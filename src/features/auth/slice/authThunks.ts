@@ -1,4 +1,4 @@
-import {createAsyncThunk} from '@reduxjs/toolkit';
+import {createAsyncThunk, type Dispatch} from '@reduxjs/toolkit';
 
 import type {
   AuthCredentials,
@@ -7,8 +7,10 @@ import type {
   SignUpInput,
 } from '@features/auth/types';
 import {AppFirebaseError} from '@services/firebase/errors';
+import {resetSyncState} from '@features/sync/slice/syncSlice';
+import {resetTasksState} from '@features/tasks/slice/tasksSlice';
 
-import {requireAuthService} from '@store/dependencies';
+import {requireAuthRepository} from '@store/dependencies';
 
 function toErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof AppFirebaseError) {
@@ -22,11 +24,19 @@ function toErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+/**
+ * Clears Redux caches that belong to a signed-in user.
+ * Keeps auth preferences like rememberedEmail.
+ */
+export function clearUserScopedApplicationState(dispatch: Dispatch): void {
+  dispatch(resetTasksState());
+  dispatch(resetSyncState());
+}
+
 export const hydrateAuthSession = createAsyncThunk<AuthSession>(
   'auth/hydrateSession',
   async () => {
-    const authService = requireAuthService();
-    return authService.getCurrentSession();
+    return requireAuthRepository().getCurrentSession();
   },
 );
 
@@ -36,7 +46,7 @@ export const signInWithEmail = createAsyncThunk<
   {rejectValue: string}
 >('auth/signInWithEmail', async (credentials, {rejectWithValue}) => {
   try {
-    return await requireAuthService().signIn(credentials);
+    return await requireAuthRepository().signIn(credentials);
   } catch (error) {
     return rejectWithValue(toErrorMessage(error, 'Sign in failed.'));
   }
@@ -48,7 +58,7 @@ export const signUpWithEmail = createAsyncThunk<
   {rejectValue: string}
 >('auth/signUpWithEmail', async (input, {rejectWithValue}) => {
   try {
-    return await requireAuthService().signUp(input);
+    return await requireAuthRepository().signUp(input);
   } catch (error) {
     return rejectWithValue(toErrorMessage(error, 'Sign up failed.'));
   }
@@ -56,9 +66,10 @@ export const signUpWithEmail = createAsyncThunk<
 
 export const signOutUser = createAsyncThunk<void, void, {rejectValue: string}>(
   'auth/signOutUser',
-  async (_, {rejectWithValue}) => {
+  async (_, {dispatch, rejectWithValue}) => {
     try {
-      await requireAuthService().signOut();
+      await requireAuthRepository().signOut();
+      clearUserScopedApplicationState(dispatch);
     } catch (error) {
       return rejectWithValue(toErrorMessage(error, 'Sign out failed.'));
     }

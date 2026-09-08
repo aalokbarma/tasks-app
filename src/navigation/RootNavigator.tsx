@@ -1,7 +1,8 @@
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, StyleSheet, Text, View} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
+import {selectAuthStatus} from '@store/selectors';
 import {useAppSelector} from '@store/hooks';
 import {useTheme} from '@theme/ThemeProvider';
 
@@ -16,17 +17,38 @@ function BootstrapScreen() {
 
   return (
     <View
+      accessibilityLabel="Restoring your session"
+      accessibilityRole="progressbar"
       style={[
         styles.bootstrap,
         {backgroundColor: theme.colors.background},
       ]}>
-      <ActivityIndicator color={theme.colors.primary} />
+      <Text
+        style={[
+          styles.brand,
+          theme.typography.caption,
+          {color: theme.colors.primary},
+        ]}>
+        TasksApp
+      </Text>
+      <ActivityIndicator
+        color={theme.colors.primary}
+        accessibilityLabel="Loading"
+      />
+      <Text
+        style={[
+          styles.caption,
+          theme.typography.caption,
+          {color: theme.colors.textSecondary},
+        ]}>
+        Restoring your session…
+      </Text>
     </View>
   );
 }
 
 export function RootNavigator() {
-  const authStatus = useAppSelector(state => state.auth.status);
+  const authStatus = useAppSelector(selectAuthStatus);
   const {theme} = useTheme();
 
   return (
@@ -78,5 +100,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 16,
+    paddingHorizontal: 24,
+  },
+  brand: {
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    fontWeight: '700',
+  },
+  caption: {
+    textAlign: 'center',
   },
 });
