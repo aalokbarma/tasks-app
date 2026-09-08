@@ -4,6 +4,8 @@ import type {AuthService} from '@features/auth/types';
 import type {TaskRepository} from '@features/tasks/repositories/TaskRepository';
 import {createTaskUseCases} from '@features/tasks/services/taskUseCases';
 import type {TaskUseCases} from '@features/tasks/services/taskUseCases';
+import type {TaskRemoteDataSource} from '@features/tasks/services/TaskRemoteDataSource';
+import type {SyncManager} from '@features/sync/services/syncManager';
 import type {SyncQueueRepository} from '@features/sync/types';
 import {
   createConnectivityService,
@@ -33,6 +35,10 @@ export function requireTaskUseCases(): TaskUseCases {
   return createTaskUseCases(requireTaskRepository());
 }
 
+export function requireTaskRemoteDataSource(): TaskRemoteDataSource {
+  return getAppDependencies().taskRemoteDataSource;
+}
+
 export function requireSyncQueueRepository(): SyncQueueRepository {
   const repository = getAppDependencies().syncQueueRepository;
   if (!repository) {
@@ -52,4 +58,25 @@ export function getConnectivityService(): ConnectivityService {
   }
 
   return connectivityService;
+}
+
+let syncManager: SyncManager | null = null;
+
+export function registerSyncManager(manager: SyncManager): void {
+  syncManager = manager;
+}
+
+export function requireSyncManager(): SyncManager {
+  if (!syncManager) {
+    throw new Error(
+      'Sync manager is not started. Call bootstrapAppState before synchronizing.',
+    );
+  }
+
+  return syncManager;
+}
+
+export function resetSyncRuntimeForTests(): void {
+  syncManager = null;
+  connectivityService = null;
 }

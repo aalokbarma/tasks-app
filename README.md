@@ -4,7 +4,7 @@ Cross-platform task management app (React Native CLI + TypeScript) for a team-le
 
 ## Current status
 
-Scaffold, multi-env config, Firebase adapters, SQLite offline persistence, Redux Toolkit, email/password authentication, React Navigation, and **offline-first task CRUD UI** are in place. Firestore sync engine and notifications are still upcoming.
+Scaffold, multi-env config, Firebase adapters, SQLite offline persistence, Redux Toolkit, email/password authentication, React Navigation, offline-first task CRUD, and the **offline→online SyncManager** are in place. Local notifications are still upcoming.
 
 ## Architecture
 
@@ -16,15 +16,40 @@ UI (screens/components)
   → SQLite (local) / Firebase (remote adapters)
 ```
 
-- **SQLite** is the offline source of truth for tasks; Redux holds a hydrated UI cache only (not a second full DB).
-- **Auth** uses an `AuthRepository` port (Firebase adapter underneath). Screens never import Firebase. Session restore shows a splash; `onAuthStateChanged` keeps Redux in sync. Logout clears user-scoped Redux state (tasks/sync).
-- **Redux slices**: `auth`, `tasks`, `network`, `theme`, `sync` — typed `RootState` / `AppDispatch` / `useAppDispatch` / `useAppSelector`.
-- **redux-persist** whitelists only lightweight prefs (`auth.rememberedEmail`, `theme.mode`); task lists are not persisted in Redux.
-- **Firestore** is reached only through remote data-source adapters under `services/firebase` — never from the tasks feature UI module.
-- **Auth / App stacks** are selected from Redux auth status.
-- Screens are **lazy-loaded** via `React.lazy` + `Suspense`.
-- **Firebase config** is loaded exclusively from environment variables via `react-native-config`.
-- Task queries are always scoped by the signed-in `userId`.
+- **SQLite** is the local source of truth for tasks (and the UI). Redux holds a hydrated cache only — never a second full database copy.
+- **Firestore** (`users/{userId}/tasks/{taskId}`) is the remote source of truth for cross-device sync.
+- **Auth** uses an `AuthRepository` port (Firebase adapter underneath). Screens never import Firebase.
+- **SyncManager** watches NetInfo; when connectivity returns it pushes the durable outbox, pulls remote tasks, and reconciles without wiping dirty local rows.
+- **Redux slices**: `auth`, `tasks`, `network`, `theme`, `sync`.
+- **redux-persist** whitelists only `auth.rememberedEmail` and `theme.mode`.
+- Task queries and Firestore paths are always scoped by the signed-in `userId`.
+
+### Offline → online sync
+
+```
+LOCAL MUTATION
+→ SQLite transaction
+→ mark syncStatus (created | updated | deleted)
+→ enqueue sync_queue row
+→ UI updates immediately (no network wait)
+
+NETWORK ONLINE
+→ SyncManager.flush() (single-flight)
+→ push pending dirty tasks (idempotent upsert/delete)
+→ pull remote tasks
+→ reconcile (LWW by updatedAt)
+→ mark synchronized / record attempts
+```
+
+**Conflict resolution (Last-Write-Wins by `updatedAt`):**
+
+1. Push always runs before pull, so offline local mutations are authoritative until acknowledged remotely.
+2. Pull never overwrites a dirty local row (`syncStatus !== 'synced'`).
+3. For synced locals, a remote document wins only when `remote.updatedAt > local.updatedAt`.
+4. Remote-only tasks are inserted locally as `synced`.
+5. Synced locals missing from Firestore are tombstoned locally (remote delete) without enqueueing another outbox delete.
+6. Failed pushes increment durable `sync_queue.attempts` (survives restart). After `SYNC_MAX_ATTEMPTS` the entity is skipped to avoid infinite retry loops; other entities still sync.
+7. Concurrent `flush()` calls share one in-flight promise (no parallel sync runs).
 
 ## Folder structure
 

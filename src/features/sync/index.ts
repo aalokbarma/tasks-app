@@ -1,5 +1,16 @@
 export {useSyncState} from './hooks/useSyncState';
-export {createSyncEngine} from './services/syncEngine';
+export {
+  createSyncEngine,
+  createSyncManager,
+  SyncManager,
+  SYNC_MAX_ATTEMPTS,
+} from './services/syncEngine';
+export type {
+  SyncCycleResult,
+  SyncManagerDependencies,
+  SyncManagerHooks,
+} from './services/syncManager';
+export {reconcileRemoteTasks, isRemoteNewer} from './services/reconcileTasks';
 export {
   resetSyncState,
   setLastSyncedAt,
@@ -8,7 +19,10 @@ export {
   setSyncing,
   syncReducer,
 } from './slice/syncSlice';
-export {refreshPendingSyncCount} from './slice/syncThunks';
+export {
+  refreshPendingSyncCount,
+  runSynchronization,
+} from './slice/syncThunks';
 export type {
   SyncEngine,
   SyncQueueItem,
