@@ -12,6 +12,7 @@ import {
 import {refreshNetworkStatus} from '@features/network/slice/networkThunks';
 import {createSyncManager} from '@features/sync/services/syncManager';
 import {
+  setFailedCount,
   setLastSyncedAt,
   setPendingCount,
   setSyncError,
@@ -88,15 +89,20 @@ async function ensureSyncManager(dispatch: AppDispatch): Promise<void> {
         },
         onSyncFinished: result => {
           dispatch(setPendingCount(result.pendingCount));
+          dispatch(setFailedCount(result.failed));
           dispatch(setLastSyncedAt(toISODateString()));
           dispatch(setSyncing(false));
 
           if (result.failed > 0) {
             dispatch(
               setSyncError(
-                `${result.failed} change(s) failed to sync and will retry later.`,
+                result.failed === 1
+                  ? '1 change could not sync. Saved on this device — will retry.'
+                  : `${result.failed} changes could not sync. Saved on this device — will retry.`,
               ),
             );
+          } else {
+            dispatch(setSyncError(null));
           }
 
           if (result.pushed > 0 || result.pulled > 0) {

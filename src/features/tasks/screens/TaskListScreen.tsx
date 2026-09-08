@@ -11,14 +11,17 @@ import {
 
 import {EmptyState} from '@components/ui/EmptyState';
 import {FormErrorBanner} from '@components/ui/FormErrorBanner';
-import {OfflineBanner} from '@components/ui/OfflineBanner';
+import {ConnectivityStatusBar} from '@components/ui/ConnectivityStatusBar';
 import {ScreenContainer} from '@components/layout/ScreenContainer';
 import {
   TaskListItem,
   TASK_ROW_HEIGHT,
 } from '@features/tasks/components/TaskListItem';
 import {useTasksController} from '@features/tasks/hooks/useTasksController';
+import {useIsOnline} from '@features/network/hooks/useNetwork';
+import {runSynchronization} from '@features/sync/slice/syncThunks';
 import type {Task} from '@features/tasks/types';
+import {useAppDispatch} from '@store/hooks';
 import {useAppNavigation} from '@navigation/hooks';
 import {useTheme} from '@theme/ThemeProvider';
 
@@ -42,7 +45,9 @@ function getItemLayout(
 
 export function TaskListScreen() {
   const navigation = useAppNavigation<'TaskList'>();
+  const dispatch = useAppDispatch();
   const {theme} = useTheme();
+  const isOnline = useIsOnline();
   const {tasks, isLoading, errorMessage, refresh, toggleCompleted} =
     useTasksController();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -69,12 +74,16 @@ export function TaskListScreen() {
     setIsRefreshing(true);
     try {
       await refresh().unwrap();
+      // Pull-to-refresh also nudges sync when online — never blocks offline use.
+      if (isOnline) {
+        dispatch(runSynchronization());
+      }
     } catch {
       // Error banner is driven by Redux.
     } finally {
       setIsRefreshing(false);
     }
-  }, [refresh]);
+  }, [dispatch, isOnline, refresh]);
 
   const handleOpenTask = useCallback(
     (taskId: string) => {
@@ -109,7 +118,7 @@ export function TaskListScreen() {
 
   return (
     <ScreenContainer>
-      <OfflineBanner />
+      <ConnectivityStatusBar />
       <View style={styles.body}>
         {errorMessage ? (
           <View style={styles.errorWrap}>
@@ -155,7 +164,7 @@ export function TaskListScreen() {
             ListEmptyComponent={
               <EmptyState
                 title="No tasks yet"
-                description="Create a task to get started. Everything is saved on this device first."
+                description="Create a task anytime — even offline. Everything is saved on this device first."
                 actionLabel="Create task"
                 onActionPress={handleCreate}
               />

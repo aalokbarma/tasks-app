@@ -23,6 +23,8 @@ export interface SyncQueueItem {
 export interface SyncState {
   isSyncing: boolean;
   pendingCount: number;
+  /** Records that failed in the last sync cycle (still queued for retry). */
+  failedCount: number;
   lastSyncedAt: ISODateString | null;
   lastError: string | null;
 }

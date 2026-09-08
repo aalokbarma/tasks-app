@@ -51,6 +51,13 @@ NETWORK ONLINE
 6. Failed pushes increment durable `sync_queue.attempts` (survives restart). After `SYNC_MAX_ATTEMPTS` the entity is skipped to avoid infinite retry loops; other entities still sync.
 7. Concurrent `flush()` calls share one in-flight promise (no parallel sync runs).
 
+### Offline UX
+
+- NetInfo → Redux `network` slice; sync progress/errors live in `sync`.
+- `ConnectivityStatusBar` shows a calm strip for offline / syncing / pending / failed — never blocks CRUD, never alerts for normal offline use.
+- Task rows use a small dot for “saved locally”; details say “On this device”.
+- Connectivity restore (and optional pull-to-refresh while online) triggers SyncManager automatically.
+
 ### Firestore security model
 
 Rules: [`firestore.rules`](./firestore.rules) · config: [`firebase.json`](./firebase.json)

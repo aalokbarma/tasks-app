@@ -13,7 +13,7 @@ import {Button} from '@components/ui/Button';
 import {EmptyState} from '@components/ui/EmptyState';
 import {FormErrorBanner} from '@components/ui/FormErrorBanner';
 import {HeaderTextButton} from '@components/ui/HeaderTextButton';
-import {OfflineBanner} from '@components/ui/OfflineBanner';
+import {ConnectivityStatusBar} from '@components/ui/ConnectivityStatusBar';
 import {ScreenContainer} from '@components/layout/ScreenContainer';
 import {TaskFormFields} from '@features/tasks/components/TaskFormFields';
 import {useTaskById} from '@features/tasks/hooks/useTaskById';
@@ -128,7 +128,7 @@ export function EditTaskScreen() {
   if (isBootstrapping || (isLoading && !task)) {
     return (
       <ScreenContainer>
-        <OfflineBanner />
+        <ConnectivityStatusBar />
         <View style={styles.centered}>
           <ActivityIndicator color={theme.colors.primary} />
         </View>
@@ -139,7 +139,7 @@ export function EditTaskScreen() {
   if (!task || !values) {
     return (
       <ScreenContainer>
-        <OfflineBanner />
+        <ConnectivityStatusBar />
         <EmptyState
           title="Task not found"
           description="This task is no longer available to edit."
@@ -152,7 +152,7 @@ export function EditTaskScreen() {
 
   return (
     <ScreenContainer>
-      <OfflineBanner />
+      <ConnectivityStatusBar />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>

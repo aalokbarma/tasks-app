@@ -11,7 +11,7 @@ import {
 import {Button} from '@components/ui/Button';
 import {FormErrorBanner} from '@components/ui/FormErrorBanner';
 import {HeaderTextButton} from '@components/ui/HeaderTextButton';
-import {OfflineBanner} from '@components/ui/OfflineBanner';
+import {ConnectivityStatusBar} from '@components/ui/ConnectivityStatusBar';
 import {ScreenContainer} from '@components/layout/ScreenContainer';
 import {TaskFormFields} from '@features/tasks/components/TaskFormFields';
 import {useTasksController} from '@features/tasks/hooks/useTasksController';
@@ -95,7 +95,7 @@ export function CreateTaskScreen() {
 
   return (
     <ScreenContainer>
-      <OfflineBanner />
+      <ConnectivityStatusBar />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>

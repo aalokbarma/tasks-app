@@ -12,7 +12,9 @@ export type {
 } from './services/syncManager';
 export {reconcileRemoteTasks, isRemoteNewer} from './services/reconcileTasks';
 export {
+  clearSyncFailure,
   resetSyncState,
+  setFailedCount,
   setLastSyncedAt,
   setPendingCount,
   setSyncError,

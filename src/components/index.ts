@@ -1,6 +1,7 @@
 export {ScreenContainer} from './layout/ScreenContainer';
 export {ScreenPlaceholder} from './ui/ScreenPlaceholder';
 export {Button} from './ui/Button';
+export {ConnectivityStatusBar} from './ui/ConnectivityStatusBar';
 export {EmptyState} from './ui/EmptyState';
 export {FormErrorBanner} from './ui/FormErrorBanner';
 export {HeaderTextButton} from './ui/HeaderTextButton';

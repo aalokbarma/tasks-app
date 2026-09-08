@@ -30,6 +30,9 @@ export const selectIsOnline = (state: RootState) =>
 export const selectSyncState = (state: RootState) => state.sync;
 export const selectPendingSyncCount = (state: RootState) =>
   state.sync.pendingCount;
+export const selectFailedSyncCount = (state: RootState) =>
+  state.sync.failedCount;
 export const selectIsSyncing = (state: RootState) => state.sync.isSyncing;
+export const selectSyncError = (state: RootState) => state.sync.lastError;
 
 export const selectThemeMode = (state: RootState) => state.theme.mode;

@@ -92,14 +92,10 @@ function TaskListItemComponent({
             </Text>
           )}
           {task.syncStatus !== 'synced' ? (
-            <Text
-              style={[
-                styles.meta,
-                theme.typography.caption,
-                {color: theme.colors.warning},
-              ]}>
-              Pending sync
-            </Text>
+            <View
+              accessibilityLabel="Saved on this device, waiting to sync"
+              style={[styles.pendingDot, {backgroundColor: theme.colors.primary}]}
+            />
           ) : null}
         </View>
       </View>
@@ -166,10 +162,16 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: 8,
   },
   meta: {
     flexShrink: 1,
+  },
+  pendingDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
   },
 });

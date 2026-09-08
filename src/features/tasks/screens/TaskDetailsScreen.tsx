@@ -12,7 +12,7 @@ import {Button} from '@components/ui/Button';
 import {EmptyState} from '@components/ui/EmptyState';
 import {FormErrorBanner} from '@components/ui/FormErrorBanner';
 import {HeaderTextButton} from '@components/ui/HeaderTextButton';
-import {OfflineBanner} from '@components/ui/OfflineBanner';
+import {ConnectivityStatusBar} from '@components/ui/ConnectivityStatusBar';
 import {ScreenContainer} from '@components/layout/ScreenContainer';
 import {useTaskById} from '@features/tasks/hooks/useTaskById';
 import {useTasksController} from '@features/tasks/hooks/useTasksController';
@@ -118,7 +118,7 @@ export function TaskDetailsScreen() {
   if (isBootstrapping || (isLoading && !task)) {
     return (
       <ScreenContainer>
-        <OfflineBanner />
+        <ConnectivityStatusBar />
         <View style={styles.centered}>
           <ActivityIndicator color={theme.colors.primary} />
         </View>
@@ -129,7 +129,7 @@ export function TaskDetailsScreen() {
   if (!task) {
     return (
       <ScreenContainer>
-        <OfflineBanner />
+        <ConnectivityStatusBar />
         <EmptyState
           title="Task not found"
           description="It may have been deleted, or it belongs to another account."
@@ -145,7 +145,7 @@ export function TaskDetailsScreen() {
 
   return (
     <ScreenContainer>
-      <OfflineBanner />
+      <ConnectivityStatusBar />
       <ScrollView contentContainerStyle={[styles.content, {padding: theme.spacing.lg}]}>
         <FormErrorBanner
           message={errorMessage}
@@ -182,7 +182,7 @@ export function TaskDetailsScreen() {
               },
             ]}>
             {task.completed ? 'Completed' : 'Active'}
-            {task.syncStatus !== 'synced' ? ' · Pending sync' : ''}
+            {task.syncStatus !== 'synced' ? ' · On this device' : ''}
           </Text>
 
           {task.description ? (
