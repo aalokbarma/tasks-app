@@ -9,8 +9,8 @@
          <ExecutionAction
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
-               title = "Load development environment"
-               scriptText = "export ENVFILE=&quot;${PROJECT_DIR}/../.env.development&quot;&#10;echo &quot;.env.development&quot; &gt; &quot;${PROJECT_DIR}/../.env.selected&quot;&#10;cp &quot;${PROJECT_DIR}/../.env.development&quot; &quot;${PROJECT_DIR}/../.env&quot;&#10;&quot;${SRCROOT}/../node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb&quot; &quot;${SRCROOT}/..&quot; &quot;${SRCROOT}/tmp.xcconfig&quot;&#10;">
+               title = "Load staging environment"
+               scriptText = "export ENVFILE=&quot;${PROJECT_DIR}/../.env.staging&quot;&#10;echo &quot;.env.staging&quot; &gt; &quot;${PROJECT_DIR}/../.env.selected&quot;&#10;cp &quot;${PROJECT_DIR}/../.env.staging&quot; &quot;${PROJECT_DIR}/../.env&quot;&#10;&quot;${SRCROOT}/../node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb&quot; &quot;${SRCROOT}/..&quot; &quot;${SRCROOT}/tmp.xcconfig&quot;&#10;">
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
@@ -46,16 +46,6 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "tasksappTests.xctest"
-               BlueprintName = "tasksappTests"
-               ReferencedContainer = "container:tasksapp.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -81,7 +71,7 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "ENVFILE"
-            value = ".env.development"
+            value = ".env.staging"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

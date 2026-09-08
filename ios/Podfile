@@ -14,6 +14,13 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
+# Default mapping when building from Xcode without ENVFILE set.
+# Prefer npm scripts / shared schemes which set ENVFILE explicitly.
+ENVFILES = {
+  'Debug' => '$(PODS_ROOT)/../../.env.development',
+  'Release' => '$(PODS_ROOT)/../../.env.production',
+}
+
 target 'tasksapp' do
   config = use_native_modules!
 
@@ -30,5 +37,15 @@ target 'tasksapp' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |build_config|
+        next unless target.name == 'react-native-config'
+
+        envfile = ENV['ENVFILE']
+        build_config.build_settings['ENVFILE'] =
+          envfile && !envfile.empty? ? envfile : ENVFILES[build_config.name]
+      end
+    end
   end
 end

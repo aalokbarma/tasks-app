@@ -76,9 +76,14 @@ yarn-error.log
 
 # Environment / secrets
 .env
+.env.selected
 .env.*
 !.env.*.example
 google-services.json
 GoogleService-Info.plist
 **/google-services.json
 **/GoogleService-Info.plist
+
+# react-native-config codegen
+ios/tmp.xcconfig
+

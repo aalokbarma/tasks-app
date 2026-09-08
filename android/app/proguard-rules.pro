@@ -8,3 +8,7 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# Keep BuildConfig for react-native-config
+-keep class com.tasksapp.BuildConfig { *; }
+-keepresources string/build_config_package

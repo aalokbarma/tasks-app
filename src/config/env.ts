@@ -4,6 +4,21 @@ import type {AppEnvironment} from '@app-types/common';
 
 import {APP_ENVIRONMENTS} from './constants';
 
+/**
+ * Raw environment keys exposed by react-native-config.
+ * Firebase values come exclusively from these variables.
+ */
+export interface EnvVariables {
+  APP_ENV: AppEnvironment;
+  APP_NAME: string;
+  FIREBASE_API_KEY: string | null;
+  FIREBASE_AUTH_DOMAIN: string | null;
+  FIREBASE_PROJECT_ID: string | null;
+  FIREBASE_STORAGE_BUCKET: string | null;
+  FIREBASE_MESSAGING_SENDER_ID: string | null;
+  FIREBASE_APP_ID: string | null;
+}
+
 export interface FirebasePublicConfig {
   apiKey: string;
   authDomain: string;
@@ -17,6 +32,10 @@ export interface AppConfig {
   appEnv: AppEnvironment;
   appName: string;
   firebase: FirebasePublicConfig | null;
+  /**
+   * Flat key access mirroring .env variable names.
+   */
+  env: EnvVariables;
 }
 
 function isAppEnvironment(value: string): value is AppEnvironment {
@@ -26,35 +45,6 @@ function isAppEnvironment(value: string): value is AppEnvironment {
 function readOptional(value: string | undefined): string | null {
   const trimmed = value?.trim();
   return trimmed && trimmed.length > 0 ? trimmed : null;
-}
-
-function readFirebasePublicConfig(): FirebasePublicConfig | null {
-  const apiKey = readOptional(Config.FIREBASE_API_KEY);
-  const authDomain = readOptional(Config.FIREBASE_AUTH_DOMAIN);
-  const projectId = readOptional(Config.FIREBASE_PROJECT_ID);
-  const storageBucket = readOptional(Config.FIREBASE_STORAGE_BUCKET);
-  const messagingSenderId = readOptional(Config.FIREBASE_MESSAGING_SENDER_ID);
-  const appId = readOptional(Config.FIREBASE_APP_ID);
-
-  if (
-    !apiKey ||
-    !authDomain ||
-    !projectId ||
-    !storageBucket ||
-    !messagingSenderId ||
-    !appId
-  ) {
-    return null;
-  }
-
-  return {
-    apiKey,
-    authDomain,
-    projectId,
-    storageBucket,
-    messagingSenderId,
-    appId,
-  };
 }
 
 export function resolveAppEnvironment(
@@ -67,10 +57,112 @@ export function resolveAppEnvironment(
   return 'development';
 }
 
-export function getAppConfig(): AppConfig {
+export function readEnvVariables(): EnvVariables {
   return {
-    appEnv: resolveAppEnvironment(Config.APP_ENV),
-    appName: readOptional(Config.APP_NAME) ?? 'TasksApp',
-    firebase: readFirebasePublicConfig(),
+    APP_ENV: resolveAppEnvironment(Config.APP_ENV),
+    APP_NAME: readOptional(Config.APP_NAME) ?? 'TasksApp',
+    FIREBASE_API_KEY: readOptional(Config.FIREBASE_API_KEY),
+    FIREBASE_AUTH_DOMAIN: readOptional(Config.FIREBASE_AUTH_DOMAIN),
+    FIREBASE_PROJECT_ID: readOptional(Config.FIREBASE_PROJECT_ID),
+    FIREBASE_STORAGE_BUCKET: readOptional(Config.FIREBASE_STORAGE_BUCKET),
+    FIREBASE_MESSAGING_SENDER_ID: readOptional(
+      Config.FIREBASE_MESSAGING_SENDER_ID,
+    ),
+    FIREBASE_APP_ID: readOptional(Config.FIREBASE_APP_ID),
   };
+}
+
+export function toFirebasePublicConfig(
+  env: EnvVariables,
+): FirebasePublicConfig | null {
+  const {
+    FIREBASE_API_KEY,
+    FIREBASE_AUTH_DOMAIN,
+    FIREBASE_PROJECT_ID,
+    FIREBASE_STORAGE_BUCKET,
+    FIREBASE_MESSAGING_SENDER_ID,
+    FIREBASE_APP_ID,
+  } = env;
+
+  if (
+    !FIREBASE_API_KEY ||
+    !FIREBASE_AUTH_DOMAIN ||
+    !FIREBASE_PROJECT_ID ||
+    !FIREBASE_STORAGE_BUCKET ||
+    !FIREBASE_MESSAGING_SENDER_ID ||
+    !FIREBASE_APP_ID
+  ) {
+    return null;
+  }
+
+  return {
+    apiKey: FIREBASE_API_KEY,
+    authDomain: FIREBASE_AUTH_DOMAIN,
+    projectId: FIREBASE_PROJECT_ID,
+    storageBucket: FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
+    appId: FIREBASE_APP_ID,
+  };
+}
+
+/**
+ * Typed configuration entry point for the app.
+ * All Firebase settings are sourced from environment variables only.
+ */
+export function getAppConfig(): AppConfig {
+  const env = readEnvVariables();
+
+  return {
+    appEnv: env.APP_ENV,
+    appName: env.APP_NAME,
+    firebase: toFirebasePublicConfig(env),
+    env,
+  };
+}
+
+export function getEnv(): EnvVariables {
+  return readEnvVariables();
+}
+
+export function getFirebaseEnv(): Pick<
+  EnvVariables,
+  | 'FIREBASE_API_KEY'
+  | 'FIREBASE_AUTH_DOMAIN'
+  | 'FIREBASE_PROJECT_ID'
+  | 'FIREBASE_STORAGE_BUCKET'
+  | 'FIREBASE_MESSAGING_SENDER_ID'
+  | 'FIREBASE_APP_ID'
+> {
+  const env = readEnvVariables();
+
+  return {
+    FIREBASE_API_KEY: env.FIREBASE_API_KEY,
+    FIREBASE_AUTH_DOMAIN: env.FIREBASE_AUTH_DOMAIN,
+    FIREBASE_PROJECT_ID: env.FIREBASE_PROJECT_ID,
+    FIREBASE_STORAGE_BUCKET: env.FIREBASE_STORAGE_BUCKET,
+    FIREBASE_MESSAGING_SENDER_ID: env.FIREBASE_MESSAGING_SENDER_ID,
+    FIREBASE_APP_ID: env.FIREBASE_APP_ID,
+  };
+}
+
+/**
+ * Returns a complete Firebase public config or throws.
+ * Use when a feature requires Firebase to be configured.
+ */
+export function requireFirebasePublicConfig(): FirebasePublicConfig {
+  const firebase = toFirebasePublicConfig(readEnvVariables());
+
+  if (!firebase) {
+    throw new Error(
+      'Firebase environment variables are incomplete. Set FIREBASE_API_KEY, ' +
+        'FIREBASE_AUTH_DOMAIN, FIREBASE_PROJECT_ID, FIREBASE_STORAGE_BUCKET, ' +
+        'FIREBASE_MESSAGING_SENDER_ID, and FIREBASE_APP_ID in the active .env file.',
+    );
+  }
+
+  return firebase;
+}
+
+export function isFirebaseEnvConfigured(): boolean {
+  return toFirebasePublicConfig(readEnvVariables()) !== null;
 }

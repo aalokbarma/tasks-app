@@ -4,7 +4,7 @@ Cross-platform task management app (React Native CLI + TypeScript) for a team-le
 
 ## Current status
 
-Scaffold only: feature-based architecture, typed contracts, Redux store, navigation shells, and environment templates. Business features (Firebase Auth, SQLite, sync, notifications) are intentionally not implemented yet.
+Scaffold + **multi-environment configuration**. Business features (Firebase Auth, SQLite, sync, notifications) are intentionally not implemented yet.
 
 ## Architecture
 
@@ -20,6 +20,7 @@ UI (screens/components)
 - **Firestore** is reached only through remote data-source adapters under `services/firebase` — never from the tasks feature UI module.
 - **Auth / App stacks** are selected from Redux auth status.
 - Screens are **lazy-loaded** via `React.lazy` + `Suspense`.
+- **Firebase config** is loaded exclusively from environment variables via `react-native-config`.
 
 ## Folder structure
 
@@ -27,7 +28,7 @@ UI (screens/components)
 src/
   app/            # App entry, providers, dependency composition
   components/     # Shared UI / layout
-  config/         # Env + constants
+  config/         # Env + constants (typed getAppConfig / getEnv)
   database/       # SQLite client, schema, repository adapters
   features/       # auth, tasks, sync, notifications, settings
   hooks/          # Shared typed Redux hooks
@@ -41,32 +42,111 @@ src/
 
 Path aliases: `@app`, `@components`, `@config`, `@database`, `@features`, `@hooks`, `@navigation`, `@services`, `@store`, `@theme`, `@app-types`, `@utils`.
 
-## Environment setup
+## Environments
 
-1. Copy env templates (do not commit real values):
+Supported: **development**, **staging**, **production**.
+
+Mechanism: [`react-native-config`](https://github.com/luggit/react-native-config) with:
+
+| Platform | Approach |
+|----------|----------|
+| Android | Product flavors `development` / `staging` / `production` mapped to `.env.*` via `dotenv.gradle` |
+| iOS | Shared Xcode schemes + `ENVFILE`, with Podfile fallback Debug→development / Release→production |
+| JS | Typed module `src/config/env.ts` |
+
+### Env files
+
+| File | Git | Purpose |
+|------|-----|---------|
+| `.env.development.example` | committed | Safe template |
+| `.env.staging.example` | committed | Safe template |
+| `.env.production.example` | committed | Safe template |
+| `.env.development` | **ignored** | Local values |
+| `.env.staging` | **ignored** | Local values |
+| `.env.production` | **ignored** | Local values |
+
+Variables (Firebase public web config only — never private keys):
+
+```
+APP_ENV
+APP_NAME
+FIREBASE_API_KEY
+FIREBASE_AUTH_DOMAIN
+FIREBASE_PROJECT_ID
+FIREBASE_STORAGE_BUCKET
+FIREBASE_MESSAGING_SENDER_ID
+FIREBASE_APP_ID
+```
+
+### Setup
 
 ```sh
 cp .env.development.example .env.development
 cp .env.staging.example .env.staging
 cp .env.production.example .env.production
+# Edit the .env.* files with your Firebase project values
 ```
 
-2. Fill public Firebase web config keys when ready. Native config files belong under `android/app/` and `ios/` — see `firebase/README.md`.
+Typed access:
 
-3. `.env*` files (except `*.example`) and `google-services.json` / `GoogleService-Info.plist` are gitignored.
+```ts
+import {getAppConfig, getEnv, getFirebaseEnv} from '@config/env';
 
-## Scripts
+getEnv().FIREBASE_PROJECT_ID;
+getFirebaseEnv().FIREBASE_API_KEY;
+getAppConfig().firebase; // null until all Firebase keys are set
+```
+
+## Run commands
+
+Defaults (`npm start`, `npm run ios`, `npm run android`) use **development**.
+
+### Metro
 
 ```sh
-npm start          # Metro
-npm run ios        # iOS
-npm run android    # Android
-npm run typecheck  # tsc --noEmit
-npm run lint       # ESLint
-npm test           # Jest
+npm run start:development
+npm run start:staging
+npm run start:production
 ```
 
-## Libraries (installed for scaffold)
+### iOS
+
+```sh
+npm run ios:development
+npm run ios:staging
+npm run ios:production
+```
+
+Xcode schemes: `tasksapp-development`, `tasksapp-staging`, `tasksapp-production`.
+
+### Android
+
+```sh
+npm run android:development
+npm run android:staging
+npm run android:production
+
+# Release variants
+npm run android:development:release
+npm run android:staging:release
+npm run android:production:release
+```
+
+Application IDs:
+
+- development → `com.tasksapp.dev`
+- staging → `com.tasksapp.staging`
+- production → `com.tasksapp`
+
+### Checks
+
+```sh
+npm run typecheck
+npm run lint
+npm test
+```
+
+## Libraries
 
 | Area | Packages |
 |------|----------|
@@ -75,23 +155,21 @@ npm test           # Jest
 | Config | `react-native-config` |
 | IDs | `uuid` |
 
-Deferred installs (next phases): `@react-native-firebase/*`, `react-native-nitro-sqlite`, `@notifee/react-native`, `@react-native-community/netinfo`.
+Deferred: `@react-native-firebase/*`, `react-native-nitro-sqlite`, `@notifee/react-native`, `@react-native-community/netinfo`.
 
-## Limitations (scaffold)
+## Limitations
 
-- No Firebase, SQLite, sync, or notification behavior yet.
-- Auth bootstraps to `unauthenticated` so navigation is exercisable.
-- Infrastructure factories throw `NotImplementedError` until implemented.
-- Native linking for `react-native-config` / gesture-handler / screens still required before device builds of those features.
+- No Firebase Auth / SQLite / sync / notification behavior yet.
+- Empty Firebase env values are valid for scaffold; `getAppConfig().firebase` stays `null` until filled.
+- After changing the Podfile, run `bundle exec pod install --project-directory=ios`.
 
-## Run instructions
-
-Follow the React Native environment guide, then:
+## First-time setup
 
 ```sh
 npm install
 bundle install
 bundle exec pod install --project-directory=ios
-npm start
-npm run ios   # or npm run android
+cp .env.development.example .env.development
+npm run start:development
+npm run ios:development   # or npm run android:development
 ```
