@@ -1,207 +1,21 @@
-import type {UniqueId} from '../src/types/common';
-import type {Task} from '../src/features/tasks/types';
-import type {TaskRepository} from '../src/features/tasks/repositories/TaskRepository';
-import type {TaskRemoteDataSource} from '../src/features/tasks/services/TaskRemoteDataSource';
-import type {SyncQueueItem, SyncQueueRepository} from '../src/features/sync/types';
-import type {ConnectivityService, NetworkSnapshot} from '../src/services/network/connectivity';
+import type {SyncQueueItem} from '../src/features/sync/types';
 import {createSyncManager} from '../src/features/sync/services/syncManager';
 import {reconcileRemoteTasks} from '../src/features/sync/services/reconcileTasks';
+import {
+  buildAttemptTracker,
+  resolvePushOperation,
+} from '../src/features/sync/services/syncPush';
 
-function task(partial: Partial<Task> & Pick<Task, 'id' | 'title' | 'syncStatus'>): Task {
-  const now = '2026-09-08T10:00:00.000Z';
-  return {
-    userId: 'user-1',
-    description: null,
-    completed: false,
-    dueAt: null,
-    reminderAt: null,
-    createdAt: now,
-    updatedAt: now,
-    deletedAt: null,
-    ...partial,
-  };
-}
+import {
+  createMemoryConnectivity,
+  createMemoryQueueRepository,
+  createMemoryRemote,
+  createMemoryTaskRepository,
+  makeTask as task,
+  wireQueueClearOnMark,
+} from './helpers/memoryFakes';
 
-function createMemoryTaskRepository(seed: Task[] = []): TaskRepository {
-  const tasks = new Map<UniqueId, Task>(seed.map(item => [item.id, item]));
-
-  return {
-    async getAll(userId, filters) {
-      return [...tasks.values()].filter(item => {
-        if (item.userId !== userId) {
-          return false;
-        }
-        if (!filters?.includeDeleted && item.deletedAt) {
-          return false;
-        }
-        if (
-          typeof filters?.completed === 'boolean' &&
-          item.completed !== filters.completed
-        ) {
-          return false;
-        }
-        return true;
-      });
-    },
-    async getById(userId, taskId) {
-      const found = tasks.get(taskId);
-      return found && found.userId === userId ? found : null;
-    },
-    async create() {
-      throw new Error('not used');
-    },
-    async update() {
-      throw new Error('not used');
-    },
-    async delete() {
-      throw new Error('not used');
-    },
-    async setCompleted() {
-      throw new Error('not used');
-    },
-    async upsertMany(userId, items) {
-      for (const item of items) {
-        if (item.userId !== userId) {
-          throw new Error('user mismatch');
-        }
-        tasks.set(item.id, item);
-      }
-    },
-    async getPendingSync(userId) {
-      return [...tasks.values()].filter(
-        item =>
-          item.userId === userId &&
-          ['created', 'updated', 'deleted', 'pending'].includes(item.syncStatus),
-      );
-    },
-    async markSynchronized(userId, taskIds) {
-      for (const id of taskIds) {
-        const existing = tasks.get(id);
-        if (existing && existing.userId === userId) {
-          tasks.set(id, {...existing, syncStatus: 'synced'});
-        }
-      }
-    },
-  };
-}
-
-function createMemoryQueueRepository(
-  seed: SyncQueueItem[] = [],
-): SyncQueueRepository & {items: SyncQueueItem[]} {
-  const items = [...seed];
-
-  return {
-    items,
-    async enqueue(input) {
-      const item: SyncQueueItem = {
-        id: input.id ?? `queue-${items.length + 1}`,
-        entityType: 'task',
-        entityId: input.entityId,
-        operation: input.operation,
-        payloadJson: input.payloadJson,
-        attempts: 0,
-        lastError: null,
-        createdAt: '2026-09-08T10:00:00.000Z',
-      };
-      items.push(item);
-      return item;
-    },
-    async listPending(limit) {
-      return items.slice(0, limit);
-    },
-    async markAttempt(id, errorMessage) {
-      const item = items.find(entry => entry.id === id);
-      if (!item) {
-        throw new Error(`missing ${id}`);
-      }
-      item.attempts += 1;
-      item.lastError = errorMessage;
-    },
-    async remove(id) {
-      const index = items.findIndex(entry => entry.id === id);
-      if (index >= 0) {
-        items.splice(index, 1);
-      }
-    },
-    async markSynchronized(ids) {
-      for (const id of [...ids]) {
-        const index = items.findIndex(entry => entry.id === id);
-        if (index >= 0) {
-          items.splice(index, 1);
-        }
-      }
-    },
-    async countPending() {
-      return items.length;
-    },
-  };
-}
-
-function createMemoryRemote(
-  seed: Task[] = [],
-): TaskRemoteDataSource & {store: Map<UniqueId, Task>; failNextUpserts: number} {
-  const store = new Map(seed.map(item => [item.id, item]));
-
-  return {
-    store,
-    failNextUpserts: 0,
-    async fetchAll() {
-      return [...store.values()];
-    },
-    async upsert(_userId, next) {
-      if (this.failNextUpserts > 0) {
-        this.failNextUpserts -= 1;
-        throw new Error('network blip');
-      }
-      store.set(next.id, next);
-    },
-    async remove(_userId, taskId) {
-      store.delete(taskId);
-    },
-  };
-}
-
-function createMemoryConnectivity(
-  initial: NetworkSnapshot = {
-    status: 'online',
-    isInternetReachable: true,
-  },
-): ConnectivityService & {
-  snapshot: NetworkSnapshot;
-  listeners: Array<(snapshot: NetworkSnapshot) => void>;
-  goOnline: () => void;
-  goOffline: () => void;
-} {
-  const listeners: Array<(snapshot: NetworkSnapshot) => void> = [];
-  const service = {
-    snapshot: initial,
-    listeners,
-    async getStatus() {
-      return service.snapshot;
-    },
-    subscribe(listener: (snapshot: NetworkSnapshot) => void) {
-      listeners.push(listener);
-      return () => {
-        const index = listeners.indexOf(listener);
-        if (index >= 0) {
-          listeners.splice(index, 1);
-        }
-      };
-    },
-    goOnline() {
-      service.snapshot = {status: 'online', isInternetReachable: true};
-      listeners.forEach(listener => listener(service.snapshot));
-    },
-    goOffline() {
-      service.snapshot = {status: 'offline', isInternetReachable: false};
-      listeners.forEach(listener => listener(service.snapshot));
-    },
-  };
-
-  return service;
-}
-
-describe('reconcileRemoteTasks (LWW)', () => {
+describe('reconcileRemoteTasks (conflict resolution)', () => {
   it('does not overwrite dirty local rows', () => {
     const result = reconcileRemoteTasks({
       userId: 'user-1',
@@ -226,7 +40,7 @@ describe('reconcileRemoteTasks (LWW)', () => {
     expect(result.toUpsert).toHaveLength(0);
   });
 
-  it('applies newer remote onto synced local', () => {
+  it('applies newer remote onto synced local (LWW)', () => {
     const result = reconcileRemoteTasks({
       userId: 'user-1',
       localTasks: [
@@ -250,6 +64,92 @@ describe('reconcileRemoteTasks (LWW)', () => {
     expect(result.toUpsert).toHaveLength(1);
     expect(result.toUpsert[0]?.title).toBe('New');
   });
+
+  it('keeps local when timestamps are equal (idempotent)', () => {
+    const stamp = '2026-09-08T12:00:00.000Z';
+    const result = reconcileRemoteTasks({
+      userId: 'user-1',
+      localTasks: [
+        task({
+          id: 'a',
+          title: 'Local',
+          syncStatus: 'synced',
+          updatedAt: stamp,
+        }),
+      ],
+      remoteTasks: [
+        task({
+          id: 'a',
+          title: 'Remote same time',
+          syncStatus: 'synced',
+          updatedAt: stamp,
+        }),
+      ],
+    });
+
+    expect(result.toUpsert).toHaveLength(0);
+  });
+
+  it('tombstones synced locals missing from remote', () => {
+    const result = reconcileRemoteTasks({
+      userId: 'user-1',
+      now: '2026-09-08T15:00:00.000Z',
+      localTasks: [
+        task({
+          id: 'gone',
+          title: 'Deleted elsewhere',
+          syncStatus: 'synced',
+        }),
+      ],
+      remoteTasks: [],
+    });
+
+    expect(result.toUpsert).toHaveLength(1);
+    expect(result.toUpsert[0]).toMatchObject({
+      id: 'gone',
+      deletedAt: '2026-09-08T15:00:00.000Z',
+      syncStatus: 'synced',
+    });
+  });
+});
+
+describe('syncPush helpers', () => {
+  it('resolves create/update as upsert and delete as remove', () => {
+    expect(
+      resolvePushOperation(task({id: '1', title: 'c', syncStatus: 'created'})),
+    ).toBe('upsert');
+    expect(
+      resolvePushOperation(task({id: '1', title: 'u', syncStatus: 'updated'})),
+    ).toBe('upsert');
+    expect(
+      resolvePushOperation(
+        task({
+          id: '1',
+          title: 'd',
+          syncStatus: 'deleted',
+          deletedAt: '2026-09-08T11:00:00.000Z',
+        }),
+      ),
+    ).toBe('remove');
+  });
+
+  it('skips entities that exhausted max attempts', () => {
+    const queue: SyncQueueItem[] = [
+      {
+        id: 'q1',
+        entityType: 'task',
+        entityId: 't1',
+        operation: 'create',
+        payloadJson: null,
+        attempts: 5,
+        lastError: 'network',
+        createdAt: '2026-09-08T10:00:00.000Z',
+      },
+    ];
+    const tracker = buildAttemptTracker(queue, 5);
+    expect(tracker.shouldSkip('t1')).toBe(true);
+    expect(tracker.shouldSkip('other')).toBe(false);
+  });
 });
 
 describe('SyncManager', () => {
@@ -270,24 +170,15 @@ describe('SyncManager', () => {
       },
     ]);
     const remote = createMemoryRemote();
-    const connectivity = createMemoryConnectivity();
+    wireQueueClearOnMark(local, queue);
 
     const manager = createSyncManager({
       taskRepository: local,
       syncQueueRepository: queue,
       remoteDataSource: remote,
-      connectivity,
+      connectivity: createMemoryConnectivity(),
       getUserId: () => 'user-1',
     });
-
-    // Simulate markSynchronized also clearing queue like SQLite does.
-    const originalMark = local.markSynchronized.bind(local);
-    local.markSynchronized = async (userId, ids) => {
-      await originalMark(userId, ids);
-      await queue.markSynchronized(
-        queue.items.filter(item => ids.includes(item.entityId)).map(item => item.id),
-      );
-    };
 
     const result = await manager.flushWithResult();
 
@@ -326,14 +217,7 @@ describe('SyncManager', () => {
         updatedAt: '2026-09-08T09:00:00.000Z',
       }),
     ]);
-
-    const originalMark = local.markSynchronized.bind(local);
-    local.markSynchronized = async (userId, ids) => {
-      await originalMark(userId, ids);
-      await queue.markSynchronized(
-        queue.items.filter(item => ids.includes(item.entityId)).map(item => item.id),
-      );
-    };
+    wireQueueClearOnMark(local, queue);
 
     const manager = createSyncManager({
       taskRepository: local,
@@ -372,14 +256,7 @@ describe('SyncManager', () => {
     const remote = createMemoryRemote([
       task({id: 't1', title: 'Gone', syncStatus: 'synced'}),
     ]);
-
-    const originalMark = local.markSynchronized.bind(local);
-    local.markSynchronized = async (userId, ids) => {
-      await originalMark(userId, ids);
-      await queue.markSynchronized(
-        queue.items.filter(item => ids.includes(item.entityId)).map(item => item.id),
-      );
-    };
+    wireQueueClearOnMark(local, queue);
 
     const manager = createSyncManager({
       taskRepository: local,
@@ -412,14 +289,7 @@ describe('SyncManager', () => {
     ]);
     const remote = createMemoryRemote();
     remote.failNextUpserts = 1;
-
-    const originalMark = local.markSynchronized.bind(local);
-    local.markSynchronized = async (userId, ids) => {
-      await originalMark(userId, ids);
-      await queue.markSynchronized(
-        queue.items.filter(item => ids.includes(item.entityId)).map(item => item.id),
-      );
-    };
+    wireQueueClearOnMark(local, queue);
 
     const manager = createSyncManager({
       taskRepository: local,
@@ -438,6 +308,39 @@ describe('SyncManager', () => {
     const second = await manager.flushWithResult();
     expect(second.pushed).toBe(1);
     expect(remote.store.has('t1')).toBe(true);
+  });
+
+  it('skips entities that exceeded max attempts', async () => {
+    const local = createMemoryTaskRepository([
+      task({id: 't1', title: 'Stuck', syncStatus: 'created'}),
+    ]);
+    const queue = createMemoryQueueRepository([
+      {
+        id: 'q1',
+        entityType: 'task',
+        entityId: 't1',
+        operation: 'create',
+        payloadJson: null,
+        attempts: 5,
+        lastError: 'gave up',
+        createdAt: '2026-09-08T10:00:00.000Z',
+      },
+    ]);
+    const remote = createMemoryRemote();
+
+    const manager = createSyncManager({
+      taskRepository: local,
+      syncQueueRepository: queue,
+      remoteDataSource: remote,
+      connectivity: createMemoryConnectivity(),
+      getUserId: () => 'user-1',
+      maxAttempts: 5,
+    });
+
+    const result = await manager.flushWithResult();
+    expect(result.skipped).toBe(1);
+    expect(result.pushed).toBe(0);
+    expect(remote.store.has('t1')).toBe(false);
   });
 
   it('prevents duplicate concurrent sync executions', async () => {
@@ -464,14 +367,7 @@ describe('SyncManager', () => {
       await new Promise<void>(resolve => setTimeout(resolve, 30));
       return slowUpsert(userId, next);
     };
-
-    const originalMark = local.markSynchronized.bind(local);
-    local.markSynchronized = async (userId, ids) => {
-      await originalMark(userId, ids);
-      await queue.markSynchronized(
-        queue.items.filter(item => ids.includes(item.entityId)).map(item => item.id),
-      );
-    };
+    wireQueueClearOnMark(local, queue);
 
     const manager = createSyncManager({
       taskRepository: local,
@@ -511,14 +407,7 @@ describe('SyncManager', () => {
       status: 'offline',
       isInternetReachable: false,
     });
-
-    const originalMark = local.markSynchronized.bind(local);
-    local.markSynchronized = async (userId, ids) => {
-      await originalMark(userId, ids);
-      await queue.markSynchronized(
-        queue.items.filter(item => ids.includes(item.entityId)).map(item => item.id),
-      );
-    };
+    wireQueueClearOnMark(local, queue);
 
     const manager = createSyncManager({
       taskRepository: local,
@@ -536,5 +425,61 @@ describe('SyncManager', () => {
 
     expect(remote.store.has('t1')).toBe(true);
     await manager.stop();
+  });
+
+  it('pulls remote-only tasks after push without clobbering dirty locals', async () => {
+    const local = createMemoryTaskRepository([
+      task({
+        id: 'dirty',
+        title: 'Local edit',
+        syncStatus: 'updated',
+        updatedAt: '2026-09-08T11:00:00.000Z',
+      }),
+    ]);
+    const queue = createMemoryQueueRepository([
+      {
+        id: 'q1',
+        entityType: 'task',
+        entityId: 'dirty',
+        operation: 'update',
+        payloadJson: null,
+        attempts: 0,
+        lastError: null,
+        createdAt: '2026-09-08T11:00:00.000Z',
+      },
+    ]);
+    const remote = createMemoryRemote([
+      task({
+        id: 'dirty',
+        title: 'Stale remote',
+        syncStatus: 'synced',
+        updatedAt: '2026-09-08T09:00:00.000Z',
+      }),
+      task({
+        id: 'remote-only',
+        title: 'From cloud',
+        syncStatus: 'synced',
+        updatedAt: '2026-09-08T12:00:00.000Z',
+      }),
+    ]);
+    wireQueueClearOnMark(local, queue);
+
+    const manager = createSyncManager({
+      taskRepository: local,
+      syncQueueRepository: queue,
+      remoteDataSource: remote,
+      connectivity: createMemoryConnectivity(),
+      getUserId: () => 'user-1',
+    });
+
+    const result = await manager.flushWithResult();
+    expect(result.pushed).toBe(1);
+    expect(result.pulled).toBe(1);
+
+    expect((await local.getById('user-1', 'dirty'))?.title).toBe('Local edit');
+    expect((await local.getById('user-1', 'dirty'))?.syncStatus).toBe('synced');
+    expect((await local.getById('user-1', 'remote-only'))?.title).toBe(
+      'From cloud',
+    );
   });
 });
