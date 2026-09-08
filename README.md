@@ -150,7 +150,7 @@ npm test
 
 | Area | Packages |
 |------|----------|
-| Navigation | `@react-navigation/native`, `native-stack`, `screens`, `gesture-handler`, `safe-area-context` |
+| Navigation | `@react-navigation/native`, `native-stack`, `screens`, `gesture-handler` (`2.32.0+`, Kotlin 2.2 fix), `safe-area-context` |
 | State | `@reduxjs/toolkit`, `react-redux` |
 | Config | `react-native-config` |
 | IDs | `uuid` |
@@ -165,8 +165,16 @@ Deferred: `@react-native-firebase/*`, `react-native-nitro-sqlite`, `@notifee/rea
 
 ## First-time setup
 
+**Node.js:** React Native `0.87` expects `^22.13.0 || ^24.3.0 || >=26.0.0` (Node **23** is not listed). This repo includes `.nvmrc` (`22.13.0`) and `.yarnrc` (`ignore-engines true`) so Yarn can still install on unsupported local Node versions. Prefer:
+
+```sh
+nvm install
+nvm use
+```
+
 ```sh
 npm install
+# or: yarn install
 bundle install
 bundle exec pod install --project-directory=ios
 cp .env.development.example .env.development
