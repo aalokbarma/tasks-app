@@ -5,7 +5,9 @@ import {
   Text,
   TextInput,
   View,
+  type StyleProp,
   type TextInputProps,
+  type TextStyle,
 } from 'react-native';
 
 import {useTheme} from '@theme/ThemeProvider';
@@ -18,6 +20,7 @@ export interface TextFieldProps extends Omit<TextInputProps, 'style'> {
   accessibilityLabel?: string;
   rightAccessory?: ReactNode;
   containerStyle?: object;
+  inputStyle?: StyleProp<TextStyle>;
 }
 
 export function TextField({
@@ -28,6 +31,7 @@ export function TextField({
   accessibilityLabel,
   rightAccessory,
   containerStyle,
+  inputStyle,
   editable = true,
   ...inputProps
 }: TextFieldProps) {
@@ -53,6 +57,7 @@ export function TextField({
       <View
         style={[
           styles.inputRow,
+          inputProps.multiline && styles.inputRowMultiline,
           {
             backgroundColor: theme.colors.surface,
             borderColor,
@@ -80,6 +85,7 @@ export function TextField({
               color: theme.colors.textPrimary,
             },
             !editable && styles.inputDisabled,
+            inputStyle,
           ]}
         />
         {rightAccessory}
@@ -160,6 +166,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  inputRowMultiline: {
+    alignItems: 'flex-start',
+    paddingVertical: 4,
   },
   input: {
     flex: 1,

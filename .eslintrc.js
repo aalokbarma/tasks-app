@@ -35,5 +35,11 @@ module.exports = {
         jest: true,
       },
     },
+    {
+      files: ['**/screens/**/*.tsx', '**/navigation/**/*.tsx'],
+      rules: {
+        'react/no-unstable-nested-components': ['warn', {allowAsProps: true}],
+      },
+    },
   ],
 };

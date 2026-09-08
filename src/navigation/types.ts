@@ -16,12 +16,12 @@ export type AuthNavigatorParamList = {
 
 /**
  * Authenticated app flow — only mounted while signed in.
- * Settings remains available for account/logout without belonging to task CRUD.
  */
 export type AppNavigatorParamList = {
   TaskList: undefined;
   TaskDetails: {taskId: UniqueId};
   CreateTask: undefined;
+  EditTask: {taskId: UniqueId};
   Settings: undefined;
 };
 
@@ -55,24 +55,6 @@ export type AppRouteProp<RouteName extends keyof AppNavigatorParamList> =
 
 export type RootRouteProp<RouteName extends keyof RootNavigatorParamList> =
   RouteProp<RootNavigatorParamList, RouteName>;
-
-/** @deprecated Use AuthNavigatorParamList */
-export type AuthStackParamList = AuthNavigatorParamList;
-/** @deprecated Use AppNavigatorParamList */
-export type AppStackParamList = AppNavigatorParamList;
-/** @deprecated Use RootNavigatorParamList */
-export type RootStackParamList = RootNavigatorParamList;
-/** @deprecated Use AuthNavigationProp */
-export type AuthStackNavigationProp<
-  RouteName extends keyof AuthNavigatorParamList,
-> = AuthNavigationProp<RouteName>;
-/** @deprecated Use AppNavigationProp */
-export type AppStackNavigationProp<
-  RouteName extends keyof AppNavigatorParamList,
-> = AppNavigationProp<RouteName>;
-/** @deprecated Use AppRouteProp */
-export type AppStackRouteProp<RouteName extends keyof AppNavigatorParamList> =
-  AppRouteProp<RouteName>;
 
 declare global {
   namespace ReactNavigation {

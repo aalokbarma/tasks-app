@@ -4,7 +4,7 @@ Cross-platform task management app (React Native CLI + TypeScript) for a team-le
 
 ## Current status
 
-Scaffold, multi-env config, Firebase adapters, SQLite offline persistence, Redux Toolkit, and **email/password authentication** (login, signup, logout, session restore) are in place. Task UI, Firestore sync engine, and notifications are still upcoming.
+Scaffold, multi-env config, Firebase adapters, SQLite offline persistence, Redux Toolkit, email/password authentication, React Navigation, and **offline-first task CRUD UI** are in place. Firestore sync engine and notifications are still upcoming.
 
 ## Architecture
 

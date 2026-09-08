@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useState} from 'react';
 import {
+  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -9,30 +10,61 @@ import {
 } from 'react-native';
 
 import {Button} from '@components/ui/Button';
+import {EmptyState} from '@components/ui/EmptyState';
 import {FormErrorBanner} from '@components/ui/FormErrorBanner';
 import {HeaderTextButton} from '@components/ui/HeaderTextButton';
 import {OfflineBanner} from '@components/ui/OfflineBanner';
 import {ScreenContainer} from '@components/layout/ScreenContainer';
 import {TaskFormFields} from '@features/tasks/components/TaskFormFields';
+import {useTaskById} from '@features/tasks/hooks/useTaskById';
 import {useTasksController} from '@features/tasks/hooks/useTasksController';
 import {
-  emptyTaskFormValues,
-  validateTaskForm,
+  taskToFormValues,
+  toUpdateTaskInput,
   type TaskFormErrors,
   type TaskFormValues,
 } from '@features/tasks/utils/validateTaskForm';
-import {createTask as createTaskThunk} from '@features/tasks/slice/tasksThunks';
-import {useAppNavigation} from '@navigation/hooks';
+import {updateTask as updateTaskThunk} from '@features/tasks/slice/tasksThunks';
+import {useAppNavigation, useAppRoute} from '@navigation/hooks';
 import {useTheme} from '@theme/ThemeProvider';
 
-export function CreateTaskScreen() {
-  const navigation = useAppNavigation<'CreateTask'>();
+export function EditTaskScreen() {
+  const navigation = useAppNavigation<'EditTask'>();
+  const route = useAppRoute<'EditTask'>();
+  const {taskId} = route.params;
   const {theme} = useTheme();
-  const {create, isSaving, errorMessage} = useTasksController();
+  const task = useTaskById(taskId);
+  const {refresh, update, isLoading, isSaving, errorMessage} =
+    useTasksController();
 
-  const [values, setValues] = useState<TaskFormValues>(emptyTaskFormValues);
+  const [values, setValues] = useState<TaskFormValues | null>(
+    task ? taskToFormValues(task) : null,
+  );
   const [errors, setErrors] = useState<TaskFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isBootstrapping, setIsBootstrapping] = useState(!task);
+
+  useEffect(() => {
+    if (task) {
+      setValues(current => current ?? taskToFormValues(task));
+      setIsBootstrapping(false);
+      return;
+    }
+
+    let cancelled = false;
+    refresh()
+      .unwrap()
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) {
+          setIsBootstrapping(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [refresh, task]);
 
   const busy = isSaving || isSubmitting;
 
@@ -42,7 +74,7 @@ export function CreateTaskScreen() {
         <HeaderTextButton
           label="Cancel"
           disabled={busy}
-          accessibilityLabel="Cancel create task"
+          accessibilityLabel="Cancel edit"
           onPress={() => navigation.goBack()}
         />
       ),
@@ -50,7 +82,7 @@ export function CreateTaskScreen() {
   }, [busy, navigation]);
 
   const handleChange = useCallback((patch: Partial<TaskFormValues>) => {
-    setValues(current => ({...current, ...patch}));
+    setValues(current => (current ? {...current, ...patch} : current));
     setErrors(current => {
       const next = {...current};
       if (patch.title !== undefined) {
@@ -64,11 +96,11 @@ export function CreateTaskScreen() {
   }, []);
 
   const handleSubmit = useCallback(async () => {
-    if (busy) {
+    if (!values || busy) {
       return;
     }
 
-    const result = validateTaskForm(values);
+    const result = toUpdateTaskInput(taskId, values);
     if (!result.valid) {
       setErrors(result.errors);
       return;
@@ -76,14 +108,14 @@ export function CreateTaskScreen() {
 
     setIsSubmitting(true);
     try {
-      const action = await create(result.createInput);
-      if (createTaskThunk.fulfilled.match(action)) {
+      const action = await update(result.input);
+      if (updateTaskThunk.fulfilled.match(action)) {
         navigation.goBack();
         return;
       }
 
       Alert.alert(
-        'Could not save task',
+        'Could not update task',
         typeof action.payload === 'string'
           ? action.payload
           : 'Please try again.',
@@ -91,7 +123,32 @@ export function CreateTaskScreen() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [busy, create, navigation, values]);
+  }, [busy, navigation, taskId, update, values]);
+
+  if (isBootstrapping || (isLoading && !task)) {
+    return (
+      <ScreenContainer>
+        <OfflineBanner />
+        <View style={styles.centered}>
+          <ActivityIndicator color={theme.colors.primary} />
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  if (!task || !values) {
+    return (
+      <ScreenContainer>
+        <OfflineBanner />
+        <EmptyState
+          title="Task not found"
+          description="This task is no longer available to edit."
+          actionLabel="Back to tasks"
+          onActionPress={() => navigation.navigate('TaskList')}
+        />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer>
@@ -107,7 +164,7 @@ export function CreateTaskScreen() {
           ]}>
           <FormErrorBanner
             message={errorMessage}
-            accessibilityLabel="Create task error"
+            accessibilityLabel="Edit task error"
           />
           <TaskFormFields
             values={values}
@@ -117,11 +174,11 @@ export function CreateTaskScreen() {
           />
           <View style={styles.actions}>
             <Button
-              label="Save task"
+              label="Save changes"
               onPress={handleSubmit}
               loading={busy}
               disabled={busy}
-              accessibilityLabel="Save task"
+              accessibilityLabel="Save changes"
             />
           </View>
         </ScrollView>
@@ -133,6 +190,11 @@ export function CreateTaskScreen() {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
+  },
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     flexGrow: 1,

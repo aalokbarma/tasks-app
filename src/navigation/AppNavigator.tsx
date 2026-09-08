@@ -27,6 +27,12 @@ const CreateTaskScreen = lazy(() =>
   })),
 );
 
+const EditTaskScreen = lazy(() =>
+  import('@features/tasks/screens/EditTaskScreen').then(module => ({
+    default: module.EditTaskScreen,
+  })),
+);
+
 const SettingsScreen = lazy(() =>
   import('@features/settings/screens/SettingsScreen').then(module => ({
     default: module.SettingsScreen,
@@ -92,7 +98,7 @@ function TaskListHeaderRight() {
 
 /**
  * Authenticated flow. Unmounted entirely when the user is signed out,
- * so unauthenticated users cannot access TaskList / CreateTask / TaskDetails.
+ * so unauthenticated users cannot access task screens.
  */
 export function AppNavigator() {
   const {theme} = useTheme();
@@ -124,6 +130,15 @@ export function AppNavigator() {
           component={CreateTaskScreen}
           options={{
             title: 'New task',
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name="EditTask"
+          component={EditTaskScreen}
+          options={{
+            title: 'Edit task',
             presentation: 'modal',
             animation: 'slide_from_bottom',
           }}
