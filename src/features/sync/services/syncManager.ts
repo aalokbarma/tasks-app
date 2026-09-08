@@ -218,6 +218,7 @@ export class SyncManager implements SyncEngine {
           // Idempotent merge upsert — safe to retry after partial failure.
           await this.remoteDataSource.upsert(userId, {
             ...task,
+            userId,
             syncStatus: 'synced',
           });
         }

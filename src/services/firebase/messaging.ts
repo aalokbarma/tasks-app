@@ -77,6 +77,7 @@ export function createFirebaseMessagingService(): FirebaseMessagingService {
           );
         }
 
+        // Path is users/{userId}. Security rules require auth.uid == userId.
         await setDoc(
           doc(getFirestore(), 'users', userId),
           {

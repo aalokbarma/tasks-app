@@ -83,6 +83,9 @@ google-services.json
 GoogleService-Info.plist
 **/google-services.json
 **/GoogleService-Info.plist
+*-firebase-adminsdk*.json
+**/serviceAccount*.json
+**/service-account*.json
 
 # react-native-config codegen
 ios/tmp.xcconfig

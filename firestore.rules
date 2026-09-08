@@ -1,0 +1,86 @@
+rules_version = '2';
+
+/**
+ * TasksApp Firestore security rules
+ *
+ * Data model (user-scoped):
+ *   users/{userId}
+ *   users/{userId}/tasks/{taskId}
+ *
+ * Principles:
+ * - Authentication is required for every read/write.
+ * - Path `{userId}` must equal `request.auth.uid`.
+ * - Task documents must embed matching `userId` and `id` fields so a caller
+ *   cannot smuggle another owner's identity into an owned path.
+ * - Default deny for any other path.
+ *
+ * Deploy:
+ *   firebase deploy --only firestore:rules
+ */
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidTaskShape(userId, taskId) {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'id',
+          'userId',
+          'title',
+          'description',
+          'completed',
+          'dueAt',
+          'reminderAt',
+          'createdAt',
+          'updatedAt',
+          'deletedAt',
+        ])
+        && data.id == taskId
+        && data.userId == userId
+        && data.title is string
+        && data.title.size() > 0
+        && data.title.size() <= 120
+        && data.completed is bool
+        && data.createdAt is string
+        && data.updatedAt is string;
+    }
+
+    match /users/{userId} {
+      // Profile / device-token document used by push registration.
+      allow read: if isOwner(userId);
+
+      allow create, update: if isOwner(userId)
+        && request.resource.data.keys().hasOnly(['fcmTokens', 'updatedAt']);
+
+      allow delete: if isOwner(userId);
+
+      match /tasks/{taskId} {
+        allow read: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+          && isValidTaskShape(userId, taskId);
+
+        allow update: if isOwner(userId)
+          && resource.data.userId == userId
+          && isValidTaskShape(userId, taskId)
+          // Owners cannot reassign a task to another user via update.
+          && request.resource.data.userId == resource.data.userId
+          && request.resource.data.id == resource.data.id;
+
+        allow delete: if isOwner(userId)
+          && resource.data.userId == userId;
+      }
+    }
+
+    // Explicit default deny for anything outside the user-scoped tree.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

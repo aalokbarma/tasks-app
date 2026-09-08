@@ -51,6 +51,22 @@ NETWORK ONLINE
 6. Failed pushes increment durable `sync_queue.attempts` (survives restart). After `SYNC_MAX_ATTEMPTS` the entity is skipped to avoid infinite retry loops; other entities still sync.
 7. Concurrent `flush()` calls share one in-flight promise (no parallel sync runs).
 
+### Firestore security model
+
+Rules: [`firestore.rules`](./firestore.rules) · config: [`firebase.json`](./firebase.json)
+
+```
+users/{userId}
+users/{userId}/tasks/{taskId}
+```
+
+- Every operation requires Firebase Auth (`request.auth != null`).
+- Path `{userId}` must equal `request.auth.uid` — users cannot read/write another user's subtree.
+- Task create/update also require `resource`/`request.resource` `userId` and `id` to match the path (prevents identity smuggling).
+- All other documents are denied.
+- Deploy with `firebase deploy --only firestore:rules`.
+- The mobile app never embeds service-account credentials; only public `FIREBASE_*` config + native Google Services files.
+
 ## Folder structure
 
 ```

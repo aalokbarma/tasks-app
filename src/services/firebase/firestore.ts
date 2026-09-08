@@ -13,7 +13,11 @@ import type {TaskRemoteDataSource} from '@features/tasks/services/TaskRemoteData
 import type {Task} from '@features/tasks/types';
 
 import {getFirebaseAppHandle} from './app';
-import {ensureFirebaseReady, mapFirestoreError} from './errors';
+import {
+  AppFirebaseError,
+  ensureFirebaseReady,
+  mapFirestoreError,
+} from './errors';
 import {
   mapFirestoreDocumentToTask,
   mapTaskToFirestoreDocument,
@@ -66,9 +70,21 @@ export function createFirestoreService(): FirestoreService {
     async setTask(userId, task) {
       try {
         ensureFirebaseReady(getFirebaseAppHandle().ready);
-        await setDoc(taskDocument(userId, task.id), mapTaskToFirestoreDocument(task), {
-          merge: true,
-        });
+
+        // Defense in depth: never write a document whose embedded owner
+        // disagrees with the path / authenticated caller scope.
+        if (task.userId !== userId) {
+          throw new AppFirebaseError(
+            'firestore/permission-denied',
+            'Task userId does not match the authenticated owner path.',
+          );
+        }
+
+        await setDoc(
+          taskDocument(userId, task.id),
+          mapTaskToFirestoreDocument({...task, userId}),
+          {merge: true},
+        );
       } catch (error) {
         throw mapFirestoreError(error);
       }
