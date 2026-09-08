@@ -43,8 +43,6 @@ export function buildAttemptTracker(
   };
 }
 
-export function resolvePushOperation(
-  task: Task,
-): 'upsert' | 'remove' {
+export function resolvePushOperation(task: Task): 'upsert' | 'remove' {
   return task.syncStatus === 'deleted' || task.deletedAt ? 'remove' : 'upsert';
 }

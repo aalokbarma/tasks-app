@@ -1,8 +1,4 @@
-import type {
-  ISODateString,
-  SyncStatus,
-  UniqueId,
-} from '@app-types/common';
+import type {ISODateString, SyncStatus, UniqueId} from '@app-types/common';
 
 export interface Task {
   id: UniqueId;

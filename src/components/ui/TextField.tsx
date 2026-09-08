@@ -43,8 +43,8 @@ export function TextField({
   const borderColor = error
     ? theme.colors.danger
     : focused
-      ? theme.colors.focusRing
-      : theme.colors.border;
+    ? theme.colors.focusRing
+    : theme.colors.border;
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -55,8 +55,8 @@ export function TextField({
             color: error
               ? theme.colors.danger
               : focused
-                ? theme.colors.textPrimary
-                : theme.colors.textSecondary,
+              ? theme.colors.textPrimary
+              : theme.colors.textSecondary,
             marginBottom: theme.spacing.xs + 2,
           },
         ]}>
@@ -163,11 +163,7 @@ export function PasswordField({
           hitSlop={10}
           onPress={() => setVisible(current => !current)}
           style={styles.toggle}>
-          <Text
-            style={[
-              theme.typography.label,
-              {color: theme.colors.primary},
-            ]}>
+          <Text style={[theme.typography.label, {color: theme.colors.primary}]}>
             {visible ? 'Hide' : 'Show'}
           </Text>
         </Pressable>

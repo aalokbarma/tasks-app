@@ -34,9 +34,7 @@ describe('env config', () => {
     expect(env.FIREBASE_API_KEY).toBe('test-api-key');
     expect(env.FIREBASE_AUTH_DOMAIN).toBe('example.firebaseapp.com');
     expect(env.FIREBASE_PROJECT_ID).toBe('example-project');
-    expect(env.FIREBASE_STORAGE_BUCKET).toBe(
-      'example-project.appspot.com',
-    );
+    expect(env.FIREBASE_STORAGE_BUCKET).toBe('example-project.appspot.com');
     expect(env.FIREBASE_MESSAGING_SENDER_ID).toBe('1234567890');
     expect(env.FIREBASE_APP_ID).toBe('1:1234567890:web:abcdef');
   });

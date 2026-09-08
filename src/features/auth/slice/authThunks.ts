@@ -11,7 +11,6 @@ import {resetTasksState} from '@features/tasks/slice/tasksSlice';
 import {requireAuthRepository} from '@store/dependencies';
 import {toUserMessage} from '@utils/errors';
 
-
 /**
  * Clears Redux caches that belong to a signed-in user.
  * Keeps auth preferences like rememberedEmail.
@@ -36,7 +35,9 @@ export const signInWithEmail = createAsyncThunk<
   try {
     return await requireAuthRepository().signIn(credentials);
   } catch (error) {
-    return rejectWithValue(toUserMessage(error, 'Sign in failed. Please try again.'));
+    return rejectWithValue(
+      toUserMessage(error, 'Sign in failed. Please try again.'),
+    );
   }
 });
 
@@ -48,7 +49,9 @@ export const signUpWithEmail = createAsyncThunk<
   try {
     return await requireAuthRepository().signUp(input);
   } catch (error) {
-    return rejectWithValue(toUserMessage(error, 'Sign up failed. Please try again.'));
+    return rejectWithValue(
+      toUserMessage(error, 'Sign up failed. Please try again.'),
+    );
   }
 });
 
@@ -59,7 +62,9 @@ export const signOutUser = createAsyncThunk<void, void, {rejectValue: string}>(
       await requireAuthRepository().signOut();
       clearUserScopedApplicationState(dispatch);
     } catch (error) {
-      return rejectWithValue(toUserMessage(error, 'Sign out failed. Please try again.'));
+      return rejectWithValue(
+        toUserMessage(error, 'Sign out failed. Please try again.'),
+      );
     }
   },
 );

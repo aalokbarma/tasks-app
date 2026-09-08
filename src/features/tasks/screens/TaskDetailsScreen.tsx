@@ -304,10 +304,7 @@ function MetaRow({label, value}: {label: string; value: string}) {
   return (
     <View style={{gap: theme.spacing.xxs}}>
       <Text
-        style={[
-          theme.typography.caption,
-          {color: theme.colors.textSecondary},
-        ]}>
+        style={[theme.typography.caption, {color: theme.colors.textSecondary}]}>
         {label}
       </Text>
       <Text

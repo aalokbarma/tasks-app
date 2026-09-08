@@ -77,10 +77,7 @@ export const typography: TypographyScale = {
 };
 
 /** Convenience for applying typography + color in one object. */
-export function textStyle(
-  style: TypographyStyle,
-  color: string,
-): TextStyle {
+export function textStyle(style: TypographyStyle, color: string): TextStyle {
   return {...style, color};
 }
 

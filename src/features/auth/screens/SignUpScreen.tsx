@@ -143,7 +143,7 @@ export function SignUpScreen() {
         returnKeyType="next"
         editable={!busy}
         accessibilityLabel="Password"
-        placeholder="At least 8 characters"
+        placeholder="At least 6 characters"
       />
 
       <PasswordField

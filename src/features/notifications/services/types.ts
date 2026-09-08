@@ -1,7 +1,4 @@
-import type {
-  LocalNotificationService,
-  PushNotificationService,
-} from '../types';
+import type {LocalNotificationService, PushNotificationService} from '../types';
 
 export interface NotificationServices {
   local: LocalNotificationService;

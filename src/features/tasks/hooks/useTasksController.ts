@@ -74,21 +74,3 @@ export function useTasksMutationState() {
     errorMessage: useTasksError(),
   };
 }
-
-/**
- * @deprecated Prefer useTasksActions + useTasksListState / useTasksMutationState
- * to avoid over-subscribing screens to the full task list.
- */
-export function useTasksController() {
-  const actions = useTasksActions();
-  const list = useTasksListState();
-  const mutation = useTasksMutationState();
-
-  return {
-    ...actions,
-    tasks: list.tasks,
-    isLoading: list.isLoading,
-    isSaving: mutation.isSaving,
-    errorMessage: mutation.errorMessage ?? list.errorMessage,
-  };
-}

@@ -97,10 +97,7 @@ export function mapFirestoreError(error: unknown): AppFirebaseError {
     code = 'firestore/permission-denied';
   } else if (rawCode === 'firestore/not-found') {
     code = 'firestore/not-found';
-  } else if (
-    rawCode === 'firestore/unavailable' ||
-    rawCode === 'unavailable'
-  ) {
+  } else if (rawCode === 'firestore/unavailable' || rawCode === 'unavailable') {
     code = 'firestore/unavailable';
   }
 
@@ -131,9 +128,6 @@ export function mapMessagingError(error: unknown): AppFirebaseError {
 
 export function ensureFirebaseReady(isReady: boolean): void {
   if (!isReady) {
-    throw new AppFirebaseError(
-      'unconfigured',
-      userMessageFor('unconfigured'),
-    );
+    throw new AppFirebaseError('unconfigured', userMessageFor('unconfigured'));
   }
 }

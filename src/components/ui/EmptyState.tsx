@@ -39,10 +39,7 @@ export function EmptyState({
           },
         ]}>
         <Text
-          style={[
-            theme.typography.subtitle,
-            {color: theme.colors.primary},
-          ]}>
+          style={[theme.typography.subtitle, {color: theme.colors.primary}]}>
           ✓
         </Text>
       </View>
@@ -69,10 +66,7 @@ export function EmptyState({
       </Text>
       {actionLabel && onActionPress ? (
         <View
-          style={[
-            styles.action,
-            {marginTop: theme.spacing.md, maxWidth: 280},
-          ]}>
+          style={[styles.action, {marginTop: theme.spacing.md, maxWidth: 280}]}>
           <Button label={actionLabel} onPress={onActionPress} />
         </View>
       ) : null}

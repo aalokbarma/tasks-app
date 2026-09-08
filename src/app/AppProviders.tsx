@@ -9,10 +9,7 @@ import {
   initializeLocalPersistence,
 } from '@app/dependencies';
 import {persistor, store} from '@store/index';
-import {
-  bootstrapAppState,
-  teardownAppObservers,
-} from '@store/bootstrap';
+import {bootstrapAppState, teardownAppObservers} from '@store/bootstrap';
 import {useAppDispatch, useAppSelector} from '@store/hooks';
 import {selectThemeMode} from '@store/selectors';
 import {ThemeProvider, useTheme} from '@theme/ThemeProvider';
@@ -22,11 +19,7 @@ function PersistLoading() {
   const {theme} = useTheme();
 
   return (
-    <View
-      style={[
-        styles.loading,
-        {backgroundColor: theme.colors.background},
-      ]}>
+    <View style={[styles.loading, {backgroundColor: theme.colors.background}]}>
       <ActivityIndicator color={theme.colors.primary} />
     </View>
   );

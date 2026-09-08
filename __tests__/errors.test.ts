@@ -79,7 +79,9 @@ describe('error handling strategy', () => {
   });
 
   it('reportError redacts secret-looking meta keys in development', () => {
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const errorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
 
     reportError('test', new Error('boom'), {
       password: 'secret-value',

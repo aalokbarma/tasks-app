@@ -8,7 +8,6 @@ export {
 export {useTaskById} from './hooks/useTaskById';
 export {
   useTasksActions,
-  useTasksController,
   useTasksListState,
   useTasksMutationState,
 } from './hooks/useTasksController';

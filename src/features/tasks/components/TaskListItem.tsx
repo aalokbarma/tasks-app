@@ -25,7 +25,9 @@ function TaskListItemComponent({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${task.completed ? 'Completed' : 'Incomplete'} task: ${task.title}${pendingSync ? ', saved on this device' : ''}`}
+      accessibilityLabel={`${
+        task.completed ? 'Completed' : 'Incomplete'
+      } task: ${task.title}${pendingSync ? ', saved on this device' : ''}`}
       accessibilityHint="Opens task details"
       onPress={() => onPress(task.id)}
       style={({pressed}) => [
@@ -62,8 +64,7 @@ function TaskListItemComponent({
           },
         ]}>
         {task.completed ? (
-          <Text
-            style={[styles.checkmark, {color: theme.colors.textOnPrimary}]}>
+          <Text style={[styles.checkmark, {color: theme.colors.textOnPrimary}]}>
             ✓
           </Text>
         ) : null}

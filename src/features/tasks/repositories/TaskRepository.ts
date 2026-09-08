@@ -27,5 +27,8 @@ export interface TaskRepository {
   /** Tasks with local changes waiting to sync. */
   getPendingSync(userId: UniqueId): Promise<Task[]>;
   /** Marks local tasks as synced after a successful remote push. */
-  markSynchronized(userId: UniqueId, taskIds: readonly UniqueId[]): Promise<void>;
+  markSynchronized(
+    userId: UniqueId,
+    taskIds: readonly UniqueId[],
+  ): Promise<void>;
 }

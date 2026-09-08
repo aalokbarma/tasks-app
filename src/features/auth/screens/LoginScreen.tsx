@@ -18,13 +18,8 @@ import {useTheme} from '@theme/ThemeProvider';
 export function LoginScreen() {
   const navigation = useNavigation<AuthNavigationProp<'Login'>>();
   const {theme} = useTheme();
-  const {
-    rememberedEmail,
-    isAuthenticating,
-    errorMessage,
-    clearError,
-    signIn,
-  } = useAuthController();
+  const {rememberedEmail, isAuthenticating, errorMessage, clearError, signIn} =
+    useAuthController();
 
   const [email, setEmail] = useState(rememberedEmail ?? '');
   const [password, setPassword] = useState('');

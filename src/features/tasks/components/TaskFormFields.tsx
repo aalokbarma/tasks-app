@@ -52,9 +52,7 @@ export function TaskFormFields({
         onChangeText={dueDate =>
           onChange({
             dueDate,
-            remindOnDueDate: dueDate.trim()
-              ? values.remindOnDueDate
-              : false,
+            remindOnDueDate: dueDate.trim() ? values.remindOnDueDate : false,
           })
         }
         error={errors.dueDate}
@@ -80,9 +78,7 @@ export function TaskFormFields({
             : 'Add a due date to enable reminders'
         }
         disabled={!editable || !reminderEnabled}
-        onPress={() =>
-          onChange({remindOnDueDate: !values.remindOnDueDate})
-        }
+        onPress={() => onChange({remindOnDueDate: !values.remindOnDueDate})}
         style={({pressed}) => [
           styles.reminderRow,
           {
@@ -111,10 +107,7 @@ export function TaskFormFields({
           ]}>
           {values.remindOnDueDate ? (
             <Text
-              style={[
-                styles.checkmark,
-                {color: theme.colors.textOnPrimary},
-              ]}>
+              style={[styles.checkmark, {color: theme.colors.textOnPrimary}]}>
               ✓
             </Text>
           ) : null}
@@ -138,10 +131,7 @@ export function TaskFormFields({
       </Pressable>
 
       <Text
-        style={[
-          theme.typography.caption,
-          {color: theme.colors.textTertiary},
-        ]}>
+        style={[theme.typography.caption, {color: theme.colors.textTertiary}]}>
         Saved on this device first. Sync runs when you are online.
       </Text>
     </View>

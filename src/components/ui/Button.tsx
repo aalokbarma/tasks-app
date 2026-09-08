@@ -10,7 +10,8 @@ import {useTheme} from '@theme/ThemeProvider';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
-export interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> {
+export interface ButtonProps
+  extends Omit<PressableProps, 'children' | 'style'> {
   label: string;
   onPress: () => void;
   variant?: ButtonVariant;
@@ -35,26 +36,26 @@ export function Button({
     variant === 'primary'
       ? theme.colors.primary
       : variant === 'danger'
-        ? theme.colors.danger
-        : variant === 'secondary'
-          ? theme.colors.surface
-          : 'transparent';
+      ? theme.colors.danger
+      : variant === 'secondary'
+      ? theme.colors.surface
+      : 'transparent';
 
   const textColor =
     variant === 'primary'
       ? theme.colors.textOnPrimary
       : variant === 'danger'
-        ? theme.colors.textOnDanger
-        : variant === 'ghost'
-          ? theme.colors.primary
-          : theme.colors.textPrimary;
+      ? theme.colors.textOnDanger
+      : variant === 'ghost'
+      ? theme.colors.primary
+      : theme.colors.textPrimary;
 
   const borderColor =
     variant === 'secondary'
       ? theme.colors.borderStrong
       : variant === 'ghost'
-        ? 'transparent'
-        : 'transparent';
+      ? 'transparent'
+      : 'transparent';
 
   return (
     <Pressable

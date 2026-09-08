@@ -17,11 +17,7 @@ import type {
 } from '@features/auth/types';
 
 import {getFirebaseAppHandle} from './app';
-import {
-  AppFirebaseError,
-  ensureFirebaseReady,
-  mapAuthError,
-} from './errors';
+import {AppFirebaseError, ensureFirebaseReady, mapAuthError} from './errors';
 import {
   mapFirebaseUserToAuthUser,
   mapFirebaseUserToAuthUserOrNull,

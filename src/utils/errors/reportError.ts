@@ -48,8 +48,8 @@ function summarizeError(error: unknown): {
       error instanceof Error
         ? error.message
         : typeof (error as {message?: unknown}).message === 'string'
-          ? ((error as unknown as {message: string}).message)
-          : 'Unknown error';
+        ? (error as unknown as {message: string}).message
+        : 'Unknown error';
     return {
       name: error instanceof Error ? error.name : undefined,
       message,

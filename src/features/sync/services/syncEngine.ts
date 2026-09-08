@@ -16,11 +16,7 @@ export function createSyncEngine(
   return createSyncManager(deps);
 }
 
-export {
-  createSyncManager,
-  SyncManager,
-  SYNC_MAX_ATTEMPTS,
-} from './syncManager';
+export {createSyncManager, SyncManager, SYNC_MAX_ATTEMPTS} from './syncManager';
 export type {
   SyncCycleResult,
   SyncManagerDependencies,

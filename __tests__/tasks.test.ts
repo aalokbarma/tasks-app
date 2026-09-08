@@ -111,6 +111,7 @@ describe('task use cases (local SQLite-shaped repository)', () => {
 
     const created = await useCases.createTask(userId, {title: 'Offline note'});
     await queue.enqueue({
+      entityType: 'task',
       entityId: created.id,
       operation: 'create',
       payloadJson: null,

@@ -84,10 +84,7 @@ export function createFirebaseMessagingService(): FirebaseMessagingService {
       }
     },
 
-    async registerTokenForUser(
-      userId: UniqueId,
-      token: string,
-    ): Promise<void> {
+    async registerTokenForUser(userId: UniqueId, token: string): Promise<void> {
       try {
         ensureFirebaseReady(getFirebaseAppHandle().ready);
 

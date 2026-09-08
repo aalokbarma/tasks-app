@@ -45,7 +45,9 @@ export function AuthFormLayout({
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? (belowHeader ? 64 : 0) : 0}>
+        keyboardVerticalOffset={
+          Platform.OS === 'ios' ? (belowHeader ? 64 : 0) : 0
+        }>
         <ScrollView
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"

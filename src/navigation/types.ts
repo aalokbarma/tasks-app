@@ -1,7 +1,4 @@
-import type {
-  NavigatorScreenParams,
-  RouteProp,
-} from '@react-navigation/native';
+import type {NavigatorScreenParams, RouteProp} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 import type {UniqueId} from '@app-types/common';

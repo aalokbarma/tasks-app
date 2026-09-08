@@ -1,6 +1,9 @@
 import {createAsyncThunk} from '@reduxjs/toolkit';
 
-import {requireSyncQueueRepository, requireSyncManager} from '@store/dependencies';
+import {
+  requireSyncQueueRepository,
+  requireSyncManager,
+} from '@store/dependencies';
 import {toSyncUserMessage, toUserMessage} from '@utils/errors';
 
 export const refreshPendingSyncCount = createAsyncThunk<

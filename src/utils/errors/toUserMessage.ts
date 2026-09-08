@@ -1,10 +1,7 @@
 import {DatabaseError} from '@database/errors';
 import {AppFirebaseError} from '@services/firebase/errors';
 
-import {
-  DATABASE_USER_MESSAGES,
-  FIREBASE_USER_MESSAGES,
-} from './messages';
+import {DATABASE_USER_MESSAGES, FIREBASE_USER_MESSAGES} from './messages';
 
 /**
  * Maps any thrown value to a safe, user-facing message.
@@ -23,10 +20,7 @@ export function toUserMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
 
-    if (
-      message.includes('signed in') ||
-      message.includes('must be signed')
-    ) {
+    if (message.includes('signed in') || message.includes('must be signed')) {
       return 'You must be signed in to continue.';
     }
 
@@ -45,7 +39,4 @@ export function toSyncUserMessage(error: unknown): string {
   );
 }
 
-export {
-  DATABASE_USER_MESSAGES,
-  FIREBASE_USER_MESSAGES,
-} from './messages';
+export {DATABASE_USER_MESSAGES, FIREBASE_USER_MESSAGES} from './messages';

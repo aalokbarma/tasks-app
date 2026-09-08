@@ -80,8 +80,7 @@ export function validateTaskForm(
   }
 
   const description = values.description.trim();
-  const reminderAt =
-    dueAt && values.remindOnDueDate ? dueAt : null;
+  const reminderAt = dueAt && values.remindOnDueDate ? dueAt : null;
 
   return {
     valid: true,

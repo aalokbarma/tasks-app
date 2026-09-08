@@ -27,10 +27,7 @@ const RootStack = createNativeStackNavigator<RootNavigatorParamList>();
 export function RootNavigator() {
   const authStatus = useAppSelector(selectAuthStatus);
   const {theme} = useTheme();
-  const navigationTheme = useMemo(
-    () => createNavigationTheme(theme),
-    [theme],
-  );
+  const navigationTheme = useMemo(() => createNavigationTheme(theme), [theme]);
 
   const isRestoringSession = authStatus === 'unknown';
   const isAuthenticated = authStatus === 'authenticated';

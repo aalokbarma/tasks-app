@@ -21,6 +21,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "jest",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js}\" \"__tests__/**/*.{ts,tsx,js}\" \"*.{js,ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js}\" \"__tests__/**/*.{ts,tsx,js}\" \"index.js\" \"App.tsx\" \"babel.config.js\" \"metro.config.js\" \"jest.config.js\" \"jest.setup.js\" \".eslintrc.js\" \".prettierrc.js\" \"README.md\"",
     "env:check": "node scripts/with-env.js development node -e \"console.log('ENVFILE OK:', process.env.ENVFILE)\""
   },
   "dependencies": {

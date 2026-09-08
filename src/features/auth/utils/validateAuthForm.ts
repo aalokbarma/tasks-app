@@ -32,7 +32,9 @@ export interface SignUpFormErrors {
 
 export function validateLoginForm(
   values: LoginFormValues,
-): {valid: true; values: LoginFormValues} | {valid: false; errors: LoginFormErrors} {
+):
+  | {valid: true; values: LoginFormValues}
+  | {valid: false; errors: LoginFormErrors} {
   const errors: LoginFormErrors = {};
 
   const emailResult = validateEmail(values.email);
@@ -58,9 +60,7 @@ export function validateLoginForm(
   };
 }
 
-export function validateSignUpForm(
-  values: SignUpFormValues,
-):
+export function validateSignUpForm(values: SignUpFormValues):
   | {
       valid: true;
       values: {

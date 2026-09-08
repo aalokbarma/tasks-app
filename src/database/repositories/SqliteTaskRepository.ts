@@ -161,8 +161,7 @@ export function createSqliteTaskRepository(
 
       const updated: Task = {
         ...existing,
-        title:
-          input.title !== undefined ? input.title.trim() : existing.title,
+        title: input.title !== undefined ? input.title.trim() : existing.title,
         description:
           input.description !== undefined
             ? input.description
@@ -237,7 +236,13 @@ export function createSqliteTaskRepository(
           `UPDATE tasks
            SET deleted_at = ?, updated_at = ?, sync_status = ?
            WHERE id = ? AND user_id = ?;`,
-          [deleted.deletedAt, deleted.updatedAt, deleted.syncStatus, taskId, userId],
+          [
+            deleted.deletedAt,
+            deleted.updatedAt,
+            deleted.syncStatus,
+            taskId,
+            userId,
+          ],
         );
 
         // Never-synced local creates can be removed from the outbox entirely.

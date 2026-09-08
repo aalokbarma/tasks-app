@@ -28,18 +28,18 @@ Firebase Authentication (email/password) gates the app. React Navigation isolate
 
 ## Tech Stack
 
-| Area | Package | Version |
-|------|---------|---------|
-| Runtime | `react` / `react-native` | `19.2.3` / `0.87.1` |
-| Language | `typescript` | `^6.0.3` |
-| Navigation | `@react-navigation/native`, `native-stack` | `^7.1.28`, `^7.3.16` |
-| State | `@reduxjs/toolkit`, `react-redux`, `redux-persist` | `^2.12.0`, `^9.3.0`, `6.0.0` |
-| Persistence | `react-native-nitro-sqlite`, `@react-native-async-storage/async-storage` | `9.7.0`, `^2.2.0` |
-| Network | `@react-native-community/netinfo` | `11.4.1` |
-| Firebase | `@react-native-firebase/app\|auth\|firestore\|messaging` | `26.4.0` |
-| Notifications | `@notifee/react-native` | `^9.1.8` |
-| Config | `react-native-config` | `^1.5.5` |
-| IDs | `uuid` | `^11.1.0` |
+| Area          | Package                                                                  | Version                      |
+| ------------- | ------------------------------------------------------------------------ | ---------------------------- |
+| Runtime       | `react` / `react-native`                                                 | `19.2.3` / `0.87.1`          |
+| Language      | `typescript`                                                             | `^6.0.3`                     |
+| Navigation    | `@react-navigation/native`, `native-stack`                               | `^7.1.28`, `^7.3.16`         |
+| State         | `@reduxjs/toolkit`, `react-redux`, `redux-persist`                       | `^2.12.0`, `^9.3.0`, `6.0.0` |
+| Persistence   | `react-native-nitro-sqlite`, `@react-native-async-storage/async-storage` | `9.7.0`, `^2.2.0`            |
+| Network       | `@react-native-community/netinfo`                                        | `11.4.1`                     |
+| Firebase      | `@react-native-firebase/app\|auth\|firestore\|messaging`                 | `26.4.0`                     |
+| Notifications | `@notifee/react-native`                                                  | `^9.1.8`                     |
+| Config        | `react-native-config`                                                    | `^1.5.5`                     |
+| IDs           | `uuid`                                                                   | `^11.1.0`                    |
 
 Node engines: `^22.13.0 \|\| ^24.3.0 \|\| >=26.0.0` (see `.nvmrc`: `22.13.0`).
 
@@ -55,14 +55,14 @@ UI (screens / shared components)
   → SQLite adapters  |  Firebase adapters
 ```
 
-| Layer | Responsibility |
-|-------|----------------|
-| **UI** | Screens and shared components. No direct Firebase or SQLite imports. |
-| **Presentation / hooks** | Feature controllers (`useAuthController`, task hooks) bind screens to Redux actions and selectors. |
-| **Redux / use cases** | Thunks orchestrate auth, tasks, sync, and reminders. `TaskUseCases` sit on top of `TaskRepository`. |
+| Layer                    | Responsibility                                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| **UI**                   | Screens and shared components. No direct Firebase or SQLite imports.                                                |
+| **Presentation / hooks** | Feature controllers (`useAuthController`, task hooks) bind screens to Redux actions and selectors.                  |
+| **Redux / use cases**    | Thunks orchestrate auth, tasks, sync, and reminders. `TaskUseCases` sit on top of `TaskRepository`.                 |
 | **Repositories / ports** | `AuthRepository`, `TaskRepository`, `SyncQueueRepository`, `TaskRemoteDataSource`, notification service interfaces. |
-| **Local database** | Nitro SQLite — tasks + `sync_queue` (local source of truth). |
-| **Firebase** | Auth, Firestore remote SoT, Messaging token/handlers (adapters under `src/services/firebase`). |
+| **Local database**       | Nitro SQLite — tasks + `sync_queue` (local source of truth).                                                        |
+| **Firebase**             | Auth, Firestore remote SoT, Messaging token/handlers (adapters under `src/services/firebase`).                      |
 
 Composition root: `src/app/dependencies.ts` (wired through `src/store/dependencies.ts` for thunks/bootstrap).
 
@@ -191,11 +191,11 @@ interface Task {
   title: string;
   description: string | null;
   completed: boolean;
-  dueAt: string | null;       // ISO
-  reminderAt: string | null;  // ISO
-  createdAt: string;          // ISO
-  updatedAt: string;          // ISO
-  deletedAt: string | null;   // ISO
+  dueAt: string | null; // ISO
+  reminderAt: string | null; // ISO
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+  deletedAt: string | null; // ISO
   syncStatus: 'synced' | 'created' | 'updated' | 'deleted' | 'pending';
 }
 ```
@@ -224,13 +224,13 @@ interface Task {
 
 ### FCM bonus (client only)
 
-| Piece | Implementation |
-|-------|----------------|
-| Permission + device token | `PushNotificationService` → Firebase Messaging |
-| Token storage | `users/{uid}.fcmTokens` via `arrayUnion` |
-| Foreground | `subscribeForegroundMessages()` in bootstrap |
-| Background | `registerBackgroundMessageHandler()` in `index.js` |
-| Display | Notifee channel `fcm-messages` |
+| Piece                     | Implementation                                     |
+| ------------------------- | -------------------------------------------------- |
+| Permission + device token | `PushNotificationService` → Firebase Messaging     |
+| Token storage             | `users/{uid}.fcmTokens` via `arrayUnion`           |
+| Foreground                | `subscribeForegroundMessages()` in bootstrap       |
+| Background                | `registerBackgroundMessageHandler()` in `index.js` |
+| Display                   | Notifee channel `fcm-messages`                     |
 
 **Not in the app:** Admin SDK, service-account JSON, or any server FCM send path. A trusted backend must read tokens and send messages.
 
@@ -240,13 +240,13 @@ interface Task {
 
 Redux Toolkit slices:
 
-| Slice | Role |
-|-------|------|
-| `auth` | User, status, form errors, `rememberedEmail`, authenticating flag |
-| `tasks` | Hydrated task list / selection / load & save flags |
-| `network` | Connectivity snapshot + monitoring flag |
-| `sync` | Syncing flag, pending/failed counts, last synced, sync error message |
-| `theme` | `light` \| `dark` \| `system` |
+| Slice     | Role                                                                 |
+| --------- | -------------------------------------------------------------------- |
+| `auth`    | User, status, form errors, `rememberedEmail`, authenticating flag    |
+| `tasks`   | Hydrated task list / selection / load & save flags                   |
+| `network` | Connectivity snapshot + monitoring flag                              |
+| `sync`    | Syncing flag, pending/failed counts, last synced, sync error message |
+| `theme`   | `light` \| `dark` \| `system`                                        |
 
 **redux-persist** whitelists only:
 
@@ -263,11 +263,11 @@ Typed hooks: `useAppDispatch` / `useAppSelector` (`src/store/hooks`).
 
 `RootNavigator` gates on `auth.status`:
 
-| Status | Tree |
-|--------|------|
-| `unknown` | `SplashScreen` (session restore) |
-| `authenticated` | `AppNavigator` only |
-| otherwise | `AuthNavigator` only |
+| Status          | Tree                             |
+| --------------- | -------------------------------- |
+| `unknown`       | `SplashScreen` (session restore) |
+| `authenticated` | `AppNavigator` only              |
+| otherwise       | `AuthNavigator` only             |
 
 **Auth stack:** Login, Sign up (lazy-loaded).
 
@@ -283,17 +283,17 @@ Supported: **development**, **staging**, **production**.
 
 Mechanism: [`react-native-config`](https://github.com/luggit/react-native-config) + `scripts/with-env.js`.
 
-| Platform | Approach |
-|----------|----------|
-| Android | Product flavors `development` / `staging` / `production` → `.env.*` via `dotenv.gradle` |
-| iOS | Schemes `tasksapp-development` / `tasksapp-staging` / `tasksapp-production` + `ENVFILE` |
-| JS | Typed `src/config/env.ts` (`getEnv`, `getFirebaseEnv`, `getAppConfig`) |
+| Platform | Approach                                                                                |
+| -------- | --------------------------------------------------------------------------------------- |
+| Android  | Product flavors `development` / `staging` / `production` → `.env.*` via `dotenv.gradle` |
+| iOS      | Schemes `tasksapp-development` / `tasksapp-staging` / `tasksapp-production` + `ENVFILE` |
+| JS       | Typed `src/config/env.ts` (`getEnv`, `getFirebaseEnv`, `getAppConfig`)                  |
 
 ### Env files
 
-| File | Git | Purpose |
-|------|-----|---------|
-| `.env.*.example` | committed | Templates |
+| File                                                    | Git         | Purpose     |
+| ------------------------------------------------------- | ----------- | ----------- |
+| `.env.*.example`                                        | committed   | Templates   |
 | `.env.development` / `.env.staging` / `.env.production` | **ignored** | Real values |
 
 Variables (public Firebase web config only — never private keys):
@@ -460,14 +460,14 @@ npm test
 
 Focused unit coverage (Jest + in-memory fakes; **no real Firebase credentials**):
 
-| Area | Suite |
-|------|--------|
-| Auth repository + Redux transitions | `__tests__/auth.test.ts` |
-| Task CRUD / offline retrieval | `__tests__/tasks.test.ts` |
-| Sync push/pull, retries, LWW, dedupe | `__tests__/syncManager.test.ts` |
+| Area                                    | Suite                             |
+| --------------------------------------- | --------------------------------- |
+| Auth repository + Redux transitions     | `__tests__/auth.test.ts`          |
+| Task CRUD / offline retrieval           | `__tests__/tasks.test.ts`         |
+| Sync push/pull, retries, LWW, dedupe    | `__tests__/syncManager.test.ts`   |
 | Reminder schedule / cancel / reschedule | `__tests__/notifications.test.ts` |
-| Error mapping | `__tests__/errors.test.ts` |
-| Validation / mappers / env / theme | matching `__tests__/*` files |
+| Error mapping                           | `__tests__/errors.test.ts`        |
+| Validation / mappers / env / theme      | matching `__tests__/*` files      |
 
 Shared fakes: `__tests__/helpers/memoryFakes.ts` (ignored as a suite via Jest config).
 
@@ -539,19 +539,19 @@ Honest gaps and intentional cut lines:
 
 ## Assignment Decisions / Trade-offs
 
-| Decision | Why |
-|----------|-----|
-| **SQLite as local SoT, Redux as cache** | Offline UX must not depend on network or a second full in-memory DB. Redux stays a projection for screens. |
-| **Ports + composition root** | Screens/features stay testable and Firebase-agnostic; adapters can be swapped or faked in Jest. |
-| **Durable `sync_queue` + task `syncStatus`** | Survives process death; push can prefer live task rows while attempts live in the outbox. |
-| **Push-before-pull + dirty-row protection** | Offline edits remain authoritative until acknowledged; LWW applies only among synced peers. |
-| **Single-flight SyncManager** | Avoids overlapping push/pull races and duplicate remote writes. |
-| **Notifee for local reminders** | Reliable local triggers without a server; works offline. |
-| **FCM client-only** | Token registration + display without shipping Admin credentials — correct security boundary for a mobile binary. |
-| **Curated error messages** | Users never see raw Firebase/SQLite strings; `__DEV__` logs keep diagnostics useful. |
-| **Multi-env flavors/schemes** | Mirrors real product delivery (dev/staging/prod) without code forks. |
-| **Lazy secondary screens** | Faster first paint on the task list without bloating the initial bundle path. |
-| **In-memory fakes in tests** | Business logic coverage without brittle credentialed Firebase or a full native SQLite harness. |
+| Decision                                     | Why                                                                                                              |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **SQLite as local SoT, Redux as cache**      | Offline UX must not depend on network or a second full in-memory DB. Redux stays a projection for screens.       |
+| **Ports + composition root**                 | Screens/features stay testable and Firebase-agnostic; adapters can be swapped or faked in Jest.                  |
+| **Durable `sync_queue` + task `syncStatus`** | Survives process death; push can prefer live task rows while attempts live in the outbox.                        |
+| **Push-before-pull + dirty-row protection**  | Offline edits remain authoritative until acknowledged; LWW applies only among synced peers.                      |
+| **Single-flight SyncManager**                | Avoids overlapping push/pull races and duplicate remote writes.                                                  |
+| **Notifee for local reminders**              | Reliable local triggers without a server; works offline.                                                         |
+| **FCM client-only**                          | Token registration + display without shipping Admin credentials — correct security boundary for a mobile binary. |
+| **Curated error messages**                   | Users never see raw Firebase/SQLite strings; `__DEV__` logs keep diagnostics useful.                             |
+| **Multi-env flavors/schemes**                | Mirrors real product delivery (dev/staging/prod) without code forks.                                             |
+| **Lazy secondary screens**                   | Faster first paint on the task list without bloating the initial bundle path.                                    |
+| **In-memory fakes in tests**                 | Business logic coverage without brittle credentialed Firebase or a full native SQLite harness.                   |
 
 These choices favor **correct offline UX, clear boundaries, and reviewable sync semantics** over premature infrastructure (encrypted DB, full E2E, in-app push sending).
 

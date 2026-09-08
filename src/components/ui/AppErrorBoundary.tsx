@@ -1,4 +1,9 @@
-import {Component, type ErrorInfo, type PropsWithChildren, type ReactNode} from 'react';
+import {
+  Component,
+  type ErrorInfo,
+  type PropsWithChildren,
+  type ReactNode,
+} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 
 import {reportError} from '@utils/errors';

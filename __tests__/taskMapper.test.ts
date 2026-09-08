@@ -40,13 +40,13 @@ describe('SQLite task mappers', () => {
 
   it('maps a domain Task back to a SQLite row', () => {
     const task: Task = mapTaskRowToTask(row);
-    expect(mapTaskToRow({...task, completed: true, syncStatus: 'updated'})).toEqual(
-      {
-        ...row,
-        completed: 1,
-        sync_status: 'updated',
-      },
-    );
+    expect(
+      mapTaskToRow({...task, completed: true, syncStatus: 'updated'}),
+    ).toEqual({
+      ...row,
+      completed: 1,
+      sync_status: 'updated',
+    });
   });
 
   it('keeps created status until the first successful sync', () => {

@@ -144,7 +144,9 @@ describe('task reminder notifications', () => {
     ]);
 
     expect(local.scheduled.map(item => item.taskId)).toEqual(['active']);
-    expect(local.cancelled).toEqual(expect.arrayContaining(['done', 'cleared']));
+    expect(local.cancelled).toEqual(
+      expect.arrayContaining(['done', 'cleared']),
+    );
   });
 
   it('reschedules by replacing the previous reminder for the same task', async () => {

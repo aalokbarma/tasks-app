@@ -1,4 +1,10 @@
-import {ActivityIndicator, Pressable, StyleSheet, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import {useConnectivityPresentation} from '@features/network/hooks/useConnectivityPresentation';
 import {clearSyncFailure} from '@features/sync/slice/syncSlice';
@@ -65,7 +71,12 @@ export function ConnectivityStatusBar() {
           numberOfLines={2}
           style={[
             theme.typography.caption,
-            {color: palette.text, flexShrink: 1, textAlign: 'center', fontWeight: '500'},
+            {
+              color: palette.text,
+              flexShrink: 1,
+              textAlign: 'center',
+              fontWeight: '500',
+            },
           ]}>
           {presentation.message}
         </Text>
@@ -95,9 +106,6 @@ export function ConnectivityStatusBar() {
 
   return content;
 }
-
-/** @deprecated Prefer ConnectivityStatusBar — kept for import compatibility. */
-export const OfflineBanner = ConnectivityStatusBar;
 
 function resolveStatusPalette(
   kind: 'offline' | 'syncing' | 'pending' | 'failed',

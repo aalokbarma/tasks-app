@@ -11,7 +11,6 @@ export {SignUpScreen} from './screens/SignUpScreen';
 export {AuthFormLayout} from './components/AuthFormLayout';
 export type {AuthRepository} from './repositories/AuthRepository';
 export {createAuthRepository} from './services/createAuthRepository';
-export {createAuthFacade} from './services/authFacade';
 export {
   authReducer,
   clearAuthError,

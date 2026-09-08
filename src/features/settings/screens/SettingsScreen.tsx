@@ -45,10 +45,7 @@ export function SettingsScreen() {
         <View style={{gap: theme.spacing.xs}}>
           <Text
             accessibilityRole="header"
-            style={[
-              theme.typography.title,
-              {color: theme.colors.textPrimary},
-            ]}>
+            style={[theme.typography.title, {color: theme.colors.textPrimary}]}>
             Account
           </Text>
           <Text

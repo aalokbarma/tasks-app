@@ -13,7 +13,7 @@ export const FIREBASE_USER_MESSAGES: Record<string, string> = {
   'auth/wrong-password': 'Incorrect email or password.',
   'auth/invalid-credential': 'Incorrect email or password.',
   'auth/email-already-in-use': 'An account with this email already exists.',
-  'auth/weak-password': 'Choose a stronger password (at least 8 characters).',
+  'auth/weak-password': 'Choose a stronger password (at least 6 characters).',
   'auth/too-many-requests':
     'Too many attempts. Please wait a moment and try again.',
   'auth/network-request-failed':

@@ -1,7 +1,7 @@
 import type {UniqueId} from '@app-types/common';
-import type {AuthService} from '@features/auth/types';
 import type {
   AuthCredentials,
+  AuthService,
   AuthSession,
   AuthUser,
   SignUpInput,
@@ -9,7 +9,11 @@ import type {
 import type {SyncQueueItem, SyncQueueRepository} from '@features/sync/types';
 import type {TaskRepository} from '@features/tasks/repositories/TaskRepository';
 import type {TaskRemoteDataSource} from '@features/tasks/services/TaskRemoteDataSource';
-import type {CreateTaskInput, Task, UpdateTaskInput} from '@features/tasks/types';
+import type {
+  CreateTaskInput,
+  Task,
+  UpdateTaskInput,
+} from '@features/tasks/types';
 import {nextSyncStatusAfterLocalUpdate} from '@database/mappers/taskMapper';
 import type {
   ConnectivityService,
@@ -239,9 +243,7 @@ export function createMemoryQueueRepository(
   };
 }
 
-export function createMemoryRemote(
-  seed: Task[] = [],
-): TaskRemoteDataSource & {
+export function createMemoryRemote(seed: Task[] = []): TaskRemoteDataSource & {
   store: Map<UniqueId, Task>;
   failNextUpserts: number;
 } {
@@ -382,7 +384,10 @@ export function createFakeAuthService(options?: {
     },
 
     subscribe(listener: (session: AuthSession) => void): () => void {
-      void service.getCurrentSession().then(listener);
+      service
+        .getCurrentSession()
+        .then(listener)
+        .catch(() => undefined);
       return () => undefined;
     },
   };

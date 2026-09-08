@@ -47,11 +47,7 @@ export function initializeFirebaseApp(): FirebaseAppHandle {
     const projectId = app.options.projectId ?? null;
     const expectedProjectId = config.firebase?.projectId ?? null;
 
-    if (
-      expectedProjectId &&
-      projectId &&
-      expectedProjectId !== projectId
-    ) {
+    if (expectedProjectId && projectId && expectedProjectId !== projectId) {
       reportWarning(
         'firebase',
         `Native projectId "${projectId}" does not match env FIREBASE_PROJECT_ID "${expectedProjectId}".`,

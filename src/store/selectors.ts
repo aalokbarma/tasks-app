@@ -64,7 +64,9 @@ export function selectConnectivityPresentation(state: RootState): {
       kind: 'offline',
       message:
         pendingCount > 0
-          ? `Offline · ${pendingCount} change${pendingCount === 1 ? '' : 's'} saved on this device`
+          ? `Offline · ${pendingCount} change${
+              pendingCount === 1 ? '' : 's'
+            } saved on this device`
           : 'Offline · changes save on this device',
       pendingCount,
       failedCount,

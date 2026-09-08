@@ -21,9 +21,7 @@ function assertValidCredentials(credentials: AuthCredentials): void {
   }
 }
 
-function normalizeCredentials(
-  credentials: AuthCredentials,
-): AuthCredentials {
+function normalizeCredentials(credentials: AuthCredentials): AuthCredentials {
   return {
     email: normalizeEmail(credentials.email),
     password: credentials.password,
@@ -34,9 +32,7 @@ function normalizeCredentials(
  * Auth repository that validates/normalizes input before delegating
  * to the infrastructure AuthService (Firebase adapter).
  */
-export function createAuthRepository(
-  authService: AuthService,
-): AuthRepository {
+export function createAuthRepository(authService: AuthService): AuthRepository {
   return {
     getCurrentSession() {
       return authService.getCurrentSession();

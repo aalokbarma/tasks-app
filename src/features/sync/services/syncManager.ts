@@ -257,9 +257,7 @@ export class SyncManager implements SyncEngine {
     return {pushed, failed, skipped};
   }
 
-  private async pullAndReconcile(
-    userId: UniqueId,
-  ): Promise<{pulled: number}> {
+  private async pullAndReconcile(userId: UniqueId): Promise<{pulled: number}> {
     const [remoteTasks, localTasks] = await Promise.all([
       this.remoteDataSource.fetchAll(userId),
       this.taskRepository.getAll(userId, {includeDeleted: true}),
@@ -289,9 +287,7 @@ export class SyncManager implements SyncEngine {
   }
 }
 
-export function createSyncManager(
-  deps: SyncManagerDependencies,
-): SyncManager {
+export function createSyncManager(deps: SyncManagerDependencies): SyncManager {
   return new SyncManager(deps);
 }
 

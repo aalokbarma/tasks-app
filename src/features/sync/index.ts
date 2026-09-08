@@ -21,10 +21,7 @@ export {
   setSyncing,
   syncReducer,
 } from './slice/syncSlice';
-export {
-  refreshPendingSyncCount,
-  runSynchronization,
-} from './slice/syncThunks';
+export {refreshPendingSyncCount, runSynchronization} from './slice/syncThunks';
 export type {
   SyncEngine,
   SyncQueueItem,
