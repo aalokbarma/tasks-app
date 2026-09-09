@@ -61,7 +61,7 @@ export async function displayRemoteMessage(
     const title =
       remoteMessage.notification?.title ??
       readDataString(remoteMessage.data, 'title') ??
-      'TasksApp';
+      'Tasks App';
     const body =
       remoteMessage.notification?.body ??
       readDataString(remoteMessage.data, 'body') ??

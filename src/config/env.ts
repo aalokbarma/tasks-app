@@ -60,7 +60,7 @@ export function resolveAppEnvironment(
 export function readEnvVariables(): EnvVariables {
   return {
     APP_ENV: resolveAppEnvironment(Config.APP_ENV),
-    APP_NAME: readOptional(Config.APP_NAME) ?? 'TasksApp',
+    APP_NAME: readOptional(Config.APP_NAME) ?? 'Tasks App',
     FIREBASE_API_KEY: readOptional(Config.FIREBASE_API_KEY),
     FIREBASE_AUTH_DOMAIN: readOptional(Config.FIREBASE_AUTH_DOMAIN),
     FIREBASE_PROJECT_ID: readOptional(Config.FIREBASE_PROJECT_ID),

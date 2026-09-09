@@ -87,6 +87,9 @@ GoogleService-Info.plist
 **/serviceAccount*.json
 **/service-account*.json
 
+# Local tooling / scratch
+.python-packages/
+
 # react-native-config codegen
 ios/tmp.xcconfig
 

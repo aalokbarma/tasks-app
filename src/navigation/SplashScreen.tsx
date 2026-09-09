@@ -1,6 +1,8 @@
-import {ActivityIndicator, StyleSheet, Text, View} from 'react-native';
+import {ActivityIndicator, Image, StyleSheet, Text, View} from 'react-native';
 
 import {useTheme} from '@theme/ThemeProvider';
+
+const appLogo = require('../../assets/branding/app-logo.png');
 
 /**
  * Shown while Firebase auth session is being restored (`auth.status === 'unknown'`).
@@ -20,15 +22,21 @@ export function SplashScreen() {
           paddingHorizontal: theme.spacing.lg,
         },
       ]}>
+      <Image
+        source={appLogo}
+        style={styles.logo}
+        accessibilityIgnoresInvertColors
+        accessibilityLabel="Tasks App logo"
+      />
       <Text
         style={[
-          theme.typography.overline,
+          theme.typography.title,
           {
-            color: theme.colors.primary,
-            textTransform: 'uppercase',
+            color: theme.colors.textPrimary,
+            textAlign: 'center',
           },
         ]}>
-        TasksApp
+        Tasks App
       </Text>
       <ActivityIndicator
         color={theme.colors.primary}
@@ -50,5 +58,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  logo: {
+    width: 96,
+    height: 96,
+    borderRadius: 24,
   },
 });

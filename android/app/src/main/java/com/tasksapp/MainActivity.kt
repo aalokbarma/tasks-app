@@ -19,6 +19,8 @@ class MainActivity : ReactActivity() {
    * not remount a stale ScreenContainer hierarchy after process/Activity restart.
    */
   override fun onCreate(savedInstanceState: Bundle?) {
+    // Switch from BootTheme (native splash) to AppTheme before inflating.
+    setTheme(R.style.AppTheme)
     super.onCreate(null)
   }
 

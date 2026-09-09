@@ -10,7 +10,7 @@ import {
 
 jest.mock('react-native-config', () => ({
   APP_ENV: 'staging',
-  APP_NAME: 'TasksApp Staging',
+  APP_NAME: 'Tasks App Staging',
   FIREBASE_API_KEY: 'test-api-key',
   FIREBASE_AUTH_DOMAIN: 'example.firebaseapp.com',
   FIREBASE_PROJECT_ID: 'example-project',
@@ -59,7 +59,7 @@ describe('env config', () => {
     expect(
       toFirebasePublicConfig({
         APP_ENV: 'development',
-        APP_NAME: 'TasksApp',
+        APP_NAME: 'Tasks App',
         FIREBASE_API_KEY: 'present',
         FIREBASE_AUTH_DOMAIN: null,
         FIREBASE_PROJECT_ID: 'project',

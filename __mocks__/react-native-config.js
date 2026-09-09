@@ -1,6 +1,6 @@
 module.exports = {
   APP_ENV: 'development',
-  APP_NAME: 'TasksApp Dev',
+  APP_NAME: 'Tasks App Dev',
   FIREBASE_API_KEY: '',
   FIREBASE_AUTH_DOMAIN: '',
   FIREBASE_PROJECT_ID: '',

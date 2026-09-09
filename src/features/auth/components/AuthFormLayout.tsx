@@ -1,5 +1,6 @@
 import type {PropsWithChildren} from 'react';
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,6 +12,8 @@ import {
 
 import {ScreenContainer} from '@components/layout/ScreenContainer';
 import {useTheme} from '@theme/ThemeProvider';
+
+const appLogo = require('../../../assets/branding/app-logo.png');
 
 export interface AuthFormLayoutProps extends PropsWithChildren {
   title: string;
@@ -61,6 +64,12 @@ export function AuthFormLayout({
             },
           ]}>
           <View style={{gap: theme.spacing.sm}}>
+            <Image
+              source={appLogo}
+              style={styles.logo}
+              accessibilityIgnoresInvertColors
+              accessibilityLabel="Tasks App logo"
+            />
             <Text
               accessibilityRole="header"
               style={[
@@ -71,7 +80,7 @@ export function AuthFormLayout({
                   marginBottom: theme.spacing.xs,
                 },
               ]}>
-              TasksApp
+              Tasks App
             </Text>
             <Text
               style={[
@@ -145,6 +154,12 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     justifyContent: 'center',
+  },
+  logo: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    marginBottom: 4,
   },
   footer: {
     flexDirection: 'row',
