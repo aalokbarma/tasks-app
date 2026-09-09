@@ -427,6 +427,42 @@ describe('SyncManager', () => {
     await manager.stop();
   });
 
+  it('scheduleFlush pushes pending work after debounce when online', async () => {
+    const local = createMemoryTaskRepository();
+    const queue = createMemoryQueueRepository();
+    const remote = createMemoryRemote();
+    wireQueueClearOnMark(local, queue);
+
+    const manager = createSyncManager({
+      taskRepository: local,
+      syncQueueRepository: queue,
+      remoteDataSource: remote,
+      connectivity: createMemoryConnectivity(),
+      getUserId: () => 'user-1',
+      autoFlushDelayMs: 20,
+    });
+
+    await manager.start();
+
+    await local.upsertMany('user-1', [
+      task({id: 't3', title: 'Scheduled', syncStatus: 'created'}),
+    ]);
+    await queue.enqueue({
+      entityType: 'task',
+      entityId: 't3',
+      operation: 'create',
+      payloadJson: null,
+    });
+
+    manager.scheduleFlush();
+    expect(remote.store.has('t3')).toBe(false);
+
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
+    expect(remote.store.has('t3')).toBe(true);
+
+    await manager.stop();
+  });
+
   it('pulls remote-only tasks after push without clobbering dirty locals', async () => {
     const local = createMemoryTaskRepository([
       task({

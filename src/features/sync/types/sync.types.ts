@@ -33,6 +33,8 @@ export interface SyncEngine {
   start(): Promise<void>;
   stop(): Promise<void>;
   flush(): Promise<void>;
+  /** Debounced flush when online (local mutations, reconnect, foreground). */
+  scheduleFlush(): void;
 }
 
 // Re-export for convenience when sync UI needs network context typing.

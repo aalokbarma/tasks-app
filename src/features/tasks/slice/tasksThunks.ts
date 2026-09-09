@@ -8,7 +8,10 @@ import type {
 } from '@features/tasks/types';
 import type {ISODateString, UniqueId} from '@app-types/common';
 import {toISODateString} from '@utils/date';
-import {refreshPendingSyncCount} from '@features/sync/slice/syncThunks';
+import {
+  refreshPendingSyncCount,
+  requestAutomaticSynchronization,
+} from '@features/sync/slice/syncThunks';
 
 import {
   requireTaskReminderCoordinator,
@@ -50,6 +53,7 @@ export const createTask = createAsyncThunk<
     const task = await requireTaskUseCases().createTask(userId, input);
     await requireTaskReminderCoordinator().syncReminderForTask(task);
     await dispatch(refreshPendingSyncCount());
+    requestAutomaticSynchronization();
     return task;
   } catch (error) {
     reportError('tasks/create', error);
@@ -67,6 +71,7 @@ export const updateTask = createAsyncThunk<
     const task = await requireTaskUseCases().updateTask(userId, input);
     await requireTaskReminderCoordinator().syncReminderForTask(task);
     await dispatch(refreshPendingSyncCount());
+    requestAutomaticSynchronization();
     return task;
   } catch (error) {
     return rejectWithValue(toUserMessage(error, 'Failed to update task.'));
@@ -83,6 +88,7 @@ export const deleteTask = createAsyncThunk<
     await requireTaskUseCases().deleteTask(userId, taskId);
     await requireTaskReminderCoordinator().cancelReminder(taskId);
     await dispatch(refreshPendingSyncCount());
+    requestAutomaticSynchronization();
     return taskId;
   } catch (error) {
     return rejectWithValue(toUserMessage(error, 'Failed to delete task.'));
@@ -101,6 +107,7 @@ export const toggleTaskCompleted = createAsyncThunk<
       const task = await requireTaskUseCases().toggleCompleted(userId, taskId);
       await requireTaskReminderCoordinator().syncReminderForTask(task);
       await dispatch(refreshPendingSyncCount());
+      requestAutomaticSynchronization();
       return task;
     } catch (error) {
       return rejectWithValue(

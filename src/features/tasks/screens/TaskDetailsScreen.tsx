@@ -24,14 +24,17 @@ import {
   deleteTask as deleteTaskThunk,
   toggleTaskCompleted as toggleTaskCompletedThunk,
 } from '@features/tasks/slice/tasksThunks';
+import {completionToastMessage} from '@features/tasks/utils/completionToastMessage';
 import {useAppNavigation, useAppRoute} from '@navigation/hooks';
 import {useTheme} from '@theme/ThemeProvider';
+import {useToast} from '@components/ui/toast';
 
 export function TaskDetailsScreen() {
   const navigation = useAppNavigation<'TaskDetails'>();
   const route = useAppRoute<'TaskDetails'>();
   const {taskId} = route.params;
   const {theme} = useTheme();
+  const {showToast} = useToast();
   const task = useTaskById(taskId);
   const {refresh, remove, toggleCompleted} = useTasksActions();
   const {isSaving, errorMessage} = useTasksMutationState();
@@ -79,6 +82,11 @@ export function TaskDetailsScreen() {
 
   const handleToggle = useCallback(async () => {
     const action = await toggleCompleted(taskId);
+    if (toggleTaskCompletedThunk.fulfilled.match(action)) {
+      showToast(completionToastMessage(action.payload.completed));
+      return;
+    }
+
     if (toggleTaskCompletedThunk.rejected.match(action)) {
       Alert.alert(
         'Could not update task',
@@ -87,7 +95,7 @@ export function TaskDetailsScreen() {
           : 'Please try again.',
       );
     }
-  }, [taskId, toggleCompleted]);
+  }, [showToast, taskId, toggleCompleted]);
 
   const handleDelete = useCallback(() => {
     Alert.alert(

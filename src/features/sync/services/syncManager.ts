@@ -1,10 +1,19 @@
-import {SYNC_QUEUE_BATCH_SIZE, SYNC_MAX_ATTEMPTS} from '@config/constants';
+import {
+  SYNC_AUTO_FLUSH_DELAY_MS,
+  SYNC_QUEUE_BATCH_SIZE,
+  SYNC_MAX_ATTEMPTS,
+} from '@config/constants';
 import type {UniqueId} from '@app-types/common';
 import type {TaskRepository} from '@features/tasks/repositories/TaskRepository';
 import type {TaskRemoteDataSource} from '@features/tasks/services/TaskRemoteDataSource';
 import type {ConnectivityService} from '@services/network/connectivity';
 import {toISODateString} from '@utils/date';
 import {reportError, toSyncUserMessage} from '@utils/errors';
+import {
+  AppState,
+  type AppStateStatus,
+  type NativeEventSubscription,
+} from 'react-native';
 
 import type {SyncEngine, SyncQueueRepository} from '../types';
 import {reconcileRemoteTasks} from './reconcileTasks';
@@ -34,6 +43,8 @@ export interface SyncManagerDependencies {
   hooks?: SyncManagerHooks;
   maxAttempts?: number;
   batchSize?: number;
+  /** Override debounce window (tests). */
+  autoFlushDelayMs?: number;
 }
 
 /**
@@ -61,11 +72,15 @@ export class SyncManager implements SyncEngine {
   private readonly hooks: SyncManagerHooks;
   private readonly maxAttempts: number;
   private readonly batchSize: number;
+  private readonly autoFlushDelayMs: number;
 
   private started = false;
   private stopNetwork: (() => void) | null = null;
+  private appStateSubscription: NativeEventSubscription | null = null;
   private lastStatus: 'online' | 'offline' | 'unknown' = 'unknown';
+  private lastAppState: AppStateStatus = 'active';
   private inflight: Promise<SyncCycleResult> | null = null;
+  private flushTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(deps: SyncManagerDependencies) {
     this.taskRepository = deps.taskRepository;
@@ -76,6 +91,7 @@ export class SyncManager implements SyncEngine {
     this.hooks = deps.hooks ?? {};
     this.maxAttempts = deps.maxAttempts ?? SYNC_MAX_ATTEMPTS;
     this.batchSize = deps.batchSize ?? SYNC_QUEUE_BATCH_SIZE;
+    this.autoFlushDelayMs = deps.autoFlushDelayMs ?? SYNC_AUTO_FLUSH_DELAY_MS;
   }
 
   async start(): Promise<void> {
@@ -93,11 +109,18 @@ export class SyncManager implements SyncEngine {
       this.lastStatus = next.status;
 
       if (wasOffline && next.status === 'online') {
+        // Immediate flush on reconnect — pending outbox should leave ASAP.
         this.flush().catch(error => {
           reportError('sync/network-transition', error);
         });
       }
     });
+
+    this.lastAppState = (AppState.currentState as AppStateStatus) || 'active';
+    this.appStateSubscription = AppState.addEventListener(
+      'change',
+      this.handleAppStateChange,
+    );
 
     if (snapshot.status === 'online') {
       await this.flush();
@@ -106,8 +129,11 @@ export class SyncManager implements SyncEngine {
 
   async stop(): Promise<void> {
     this.started = false;
+    this.clearScheduledFlush();
     this.stopNetwork?.();
     this.stopNetwork = null;
+    this.appStateSubscription?.remove();
+    this.appStateSubscription = null;
 
     if (this.inflight) {
       try {
@@ -119,9 +145,28 @@ export class SyncManager implements SyncEngine {
   }
 
   /**
+   * Debounced flush for local mutations / foreground resume.
+   * No-ops while offline; reconnect path calls flush() directly.
+   */
+  scheduleFlush(): void {
+    if (!this.started) {
+      return;
+    }
+
+    this.clearScheduledFlush();
+    this.flushTimer = setTimeout(() => {
+      this.flushTimer = null;
+      this.flush().catch(error => {
+        reportError('sync/scheduled-flush', error);
+      });
+    }, this.autoFlushDelayMs);
+  }
+
+  /**
    * Runs one sync cycle. Concurrent callers await the same promise.
    */
   async flush(): Promise<void> {
+    this.clearScheduledFlush();
     await this.flushWithResult();
   }
 
@@ -140,6 +185,27 @@ export class SyncManager implements SyncEngine {
   /** Test/helper: whether a cycle is currently running. */
   isRunning(): boolean {
     return this.inflight !== null;
+  }
+
+  private handleAppStateChange = (nextState: AppStateStatus): void => {
+    const wasBackgrounded =
+      this.lastAppState === 'background' || this.lastAppState === 'inactive';
+    this.lastAppState = nextState;
+
+    if (
+      wasBackgrounded &&
+      nextState === 'active' &&
+      this.lastStatus === 'online'
+    ) {
+      this.scheduleFlush();
+    }
+  };
+
+  private clearScheduledFlush(): void {
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+      this.flushTimer = null;
+    }
   }
 
   private async runCycle(): Promise<SyncCycleResult> {

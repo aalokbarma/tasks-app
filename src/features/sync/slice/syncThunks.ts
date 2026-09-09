@@ -4,7 +4,7 @@ import {
   requireSyncQueueRepository,
   requireSyncManager,
 } from '@store/dependencies';
-import {toSyncUserMessage, toUserMessage} from '@utils/errors';
+import {reportError, toSyncUserMessage, toUserMessage} from '@utils/errors';
 
 export const refreshPendingSyncCount = createAsyncThunk<
   number,
@@ -35,3 +35,15 @@ export const runSynchronization = createAsyncThunk<
     return rejectWithValue(toSyncUserMessage(error));
   }
 });
+
+/**
+ * Fire-and-forget debounced sync after local writes. Safe if the manager
+ * is not ready yet (bootstrap race) — reconnect / start will pick up the queue.
+ */
+export function requestAutomaticSynchronization(): void {
+  try {
+    requireSyncManager().scheduleFlush();
+  } catch (error) {
+    reportError('sync/schedule', error);
+  }
+}

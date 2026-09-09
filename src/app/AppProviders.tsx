@@ -14,6 +14,7 @@ import {bootstrapAppState, teardownAppObservers} from '@store/bootstrap';
 import {useAppDispatch, useAppSelector} from '@store/hooks';
 import {selectThemeMode} from '@store/selectors';
 import {ThemeProvider, useTheme} from '@theme/ThemeProvider';
+import {AppToast} from '@components/ui/toast';
 import {reportError} from '@utils/errors';
 
 function PersistLoading() {
@@ -71,7 +72,9 @@ export function AppProviders({children}: PropsWithChildren) {
         <SafeAreaProvider>
           <ThemedTree>
             <PersistGate loading={<PersistLoading />} persistor={persistor}>
-              <AppBootstrap>{children}</AppBootstrap>
+              <AppBootstrap>
+                <AppToast>{children}</AppToast>
+              </AppBootstrap>
             </PersistGate>
           </ThemedTree>
         </SafeAreaProvider>

@@ -25,10 +25,13 @@ import {
 } from '@features/tasks/hooks/useTasksController';
 import {useIsOnline} from '@features/network/hooks/useNetwork';
 import {runSynchronization} from '@features/sync/slice/syncThunks';
+import {toggleTaskCompleted as toggleTaskCompletedThunk} from '@features/tasks/slice/tasksThunks';
+import {completionToastMessage} from '@features/tasks/utils/completionToastMessage';
 import type {Task} from '@features/tasks/types';
 import {useAppDispatch} from '@store/hooks';
 import {useAppNavigation} from '@navigation/hooks';
 import {useTheme} from '@theme/ThemeProvider';
+import {useToast} from '@components/ui/toast';
 
 const LIST_ITEM_SPACING = 10;
 const LIST_ITEM_LENGTH = TASK_ROW_HEIGHT + LIST_ITEM_SPACING;
@@ -52,6 +55,7 @@ export function TaskListScreen() {
   const navigation = useAppNavigation<'TaskList'>();
   const dispatch = useAppDispatch();
   const {theme} = useTheme();
+  const {showToast} = useToast();
   const isOnline = useIsOnline();
   const {tasks, isLoading, errorMessage} = useTasksListState();
   const {refresh, toggleCompleted} = useTasksActions();
@@ -98,9 +102,15 @@ export function TaskListScreen() {
 
   const handleToggleCompleted = useCallback(
     (taskId: string) => {
-      toggleCompleted(taskId);
+      toggleCompleted(taskId)
+        .then(action => {
+          if (toggleTaskCompletedThunk.fulfilled.match(action)) {
+            showToast(completionToastMessage(action.payload.completed));
+          }
+        })
+        .catch(() => undefined);
     },
-    [toggleCompleted],
+    [showToast, toggleCompleted],
   );
 
   const handleCreate = useCallback(() => {
