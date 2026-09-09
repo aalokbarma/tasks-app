@@ -1,5 +1,6 @@
 import {useEffect, type PropsWithChildren} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -65,19 +66,24 @@ function ThemedTree({children}: PropsWithChildren) {
 
 export function AppProviders({children}: PropsWithChildren) {
   return (
-    <Provider store={store}>
-      <SafeAreaProvider>
-        <ThemedTree>
-          <PersistGate loading={<PersistLoading />} persistor={persistor}>
-            <AppBootstrap>{children}</AppBootstrap>
-          </PersistGate>
-        </ThemedTree>
-      </SafeAreaProvider>
-    </Provider>
+    <GestureHandlerRootView style={styles.root}>
+      <Provider store={store}>
+        <SafeAreaProvider>
+          <ThemedTree>
+            <PersistGate loading={<PersistLoading />} persistor={persistor}>
+              <AppBootstrap>{children}</AppBootstrap>
+            </PersistGate>
+          </ThemedTree>
+        </SafeAreaProvider>
+      </Provider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   loading: {
     flex: 1,
     alignItems: 'center',

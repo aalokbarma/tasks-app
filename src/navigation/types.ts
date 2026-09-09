@@ -1,5 +1,5 @@
 import type {NavigatorScreenParams, RouteProp} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import type {StackNavigationProp} from '@react-navigation/stack';
 
 import type {UniqueId} from '@app-types/common';
 
@@ -23,8 +23,8 @@ export type AppNavigatorParamList = {
 };
 
 /**
- * Root switcher driven by authentication status.
- * Exactly one of Splash | Auth | App is mounted at a time.
+ * Logical root switcher (Splash | Auth | App). Not a real navigator —
+ * RootNavigator mounts one of these trees directly under NavigationContainer.
  */
 export type RootNavigatorParamList = {
   Splash: undefined;
@@ -34,15 +34,15 @@ export type RootNavigatorParamList = {
 
 export type AuthNavigationProp<
   RouteName extends keyof AuthNavigatorParamList = keyof AuthNavigatorParamList,
-> = NativeStackNavigationProp<AuthNavigatorParamList, RouteName>;
+> = StackNavigationProp<AuthNavigatorParamList, RouteName>;
 
 export type AppNavigationProp<
   RouteName extends keyof AppNavigatorParamList = keyof AppNavigatorParamList,
-> = NativeStackNavigationProp<AppNavigatorParamList, RouteName>;
+> = StackNavigationProp<AppNavigatorParamList, RouteName>;
 
 export type RootNavigationProp<
   RouteName extends keyof RootNavigatorParamList = keyof RootNavigatorParamList,
-> = NativeStackNavigationProp<RootNavigatorParamList, RouteName>;
+> = StackNavigationProp<RootNavigatorParamList, RouteName>;
 
 export type AuthRouteProp<RouteName extends keyof AuthNavigatorParamList> =
   RouteProp<AuthNavigatorParamList, RouteName>;
@@ -55,7 +55,8 @@ export type RootRouteProp<RouteName extends keyof RootNavigatorParamList> =
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootNavigatorParamList {}
+    // Active top-level navigator is App or Auth depending on session.
+    interface RootParamList extends AppNavigatorParamList {}
   }
 }
 

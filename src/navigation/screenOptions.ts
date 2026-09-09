@@ -1,10 +1,10 @@
-import type {NativeStackNavigationOptions} from '@react-navigation/native-stack';
+import type {StackNavigationOptions} from '@react-navigation/stack';
 
 import type {AppTheme} from '@theme/createTheme';
 
 export function createDefaultStackOptions(
   theme: AppTheme,
-): NativeStackNavigationOptions {
+): StackNavigationOptions {
   return {
     headerStyle: {
       backgroundColor: theme.colors.surfaceElevated,
@@ -16,8 +16,7 @@ export function createDefaultStackOptions(
       color: theme.colors.textPrimary,
     },
     headerShadowVisible: false,
-    headerBackButtonDisplayMode: 'minimal',
-    contentStyle: {
+    cardStyle: {
       backgroundColor: theme.colors.background,
     },
     animation: 'slide_from_right',

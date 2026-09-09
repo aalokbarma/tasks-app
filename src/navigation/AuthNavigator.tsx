@@ -1,5 +1,5 @@
 import {useMemo} from 'react';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {createStackNavigator} from '@react-navigation/stack';
 
 import {LoginScreen} from '@features/auth/screens/LoginScreen';
 import {SignUpScreen} from '@features/auth/screens/SignUpScreen';
@@ -8,13 +8,12 @@ import {useTheme} from '@theme/ThemeProvider';
 import {createDefaultStackOptions} from './screenOptions';
 import type {AuthNavigatorParamList} from './types';
 
-const Stack = createNativeStackNavigator<AuthNavigatorParamList>();
+const Stack = createStackNavigator<AuthNavigatorParamList>();
 
 /**
- * Unauthenticated flow. Unmounted entirely when the user is signed in,
- * so authenticated users cannot remain on Login/Signup.
+ * Unauthenticated flow. Unmounted entirely when the user is signed in.
  *
- * Screens are eager for the same Fabric / native-stack reason as AppNavigator.
+ * JS stack — same Fabric / ScreenStack rationale as AppNavigator.
  */
 export function AuthNavigator() {
   const {theme} = useTheme();
@@ -26,6 +25,7 @@ export function AuthNavigator() {
   return (
     <Stack.Navigator
       initialRouteName="Login"
+      detachInactiveScreens={false}
       screenOptions={{
         ...screenOptions,
         headerShown: false,
@@ -35,7 +35,6 @@ export function AuthNavigator() {
         component={LoginScreen}
         options={{
           title: 'Sign in',
-          animationTypeForReplace: 'push',
         }}
       />
       <Stack.Screen

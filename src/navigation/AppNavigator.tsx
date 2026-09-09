@@ -1,6 +1,6 @@
 import {HeaderTextButton} from '@components/ui/HeaderTextButton';
 import {useMemo} from 'react';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {createStackNavigator} from '@react-navigation/stack';
 import {StyleSheet, View} from 'react-native';
 
 import {SettingsScreen} from '@features/settings/screens/SettingsScreen';
@@ -13,15 +13,14 @@ import {useTheme} from '@theme/ThemeProvider';
 import {createDefaultStackOptions} from './screenOptions';
 import type {AppNavigationProp, AppNavigatorParamList} from './types';
 
-const Stack = createNativeStackNavigator<AppNavigatorParamList>();
+const Stack = createStackNavigator<AppNavigatorParamList>();
 
 /**
- * Authenticated flow. Unmounted entirely when the user is signed out,
- * so unauthenticated users cannot access task screens.
+ * Authenticated flow. Unmounted entirely when the user is signed out.
  *
- * Screens are eager: React.lazy + Suspense under native-stack (Fabric)
- * remounts the screen subtree asynchronously and can crash with
- * `addViewAt: failed to insert view … Index: N, Size: M`.
+ * Uses the JS stack (@react-navigation/stack) instead of native-stack so
+ * Android Fabric does not hit react-native-screens ScreenStack index crashes
+ * during push/pop (e.g. TaskList → Settings).
  */
 export function AppNavigator() {
   const {theme} = useTheme();
@@ -31,7 +30,11 @@ export function AppNavigator() {
   );
 
   return (
-    <Stack.Navigator initialRouteName="TaskList" screenOptions={screenOptions}>
+    <Stack.Navigator
+      initialRouteName="TaskList"
+      screenOptions={screenOptions}
+      // Avoid Fabric detach/reattach races on Android while screens matures.
+      detachInactiveScreens={false}>
       <Stack.Screen
         name="TaskList"
         component={TaskListScreen}

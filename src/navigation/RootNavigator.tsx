@@ -1,5 +1,4 @@
 import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {useMemo} from 'react';
 
 import {selectAuthStatus} from '@store/selectors';
@@ -10,19 +9,13 @@ import {AppNavigator} from './AppNavigator';
 import {AuthNavigator} from './AuthNavigator';
 import {createNavigationTheme} from './navigationTheme';
 import {SplashScreen} from './SplashScreen';
-import type {RootNavigatorParamList} from './types';
-
-const RootStack = createNativeStackNavigator<RootNavigatorParamList>();
 
 /**
- * Top-level navigator gated by Redux auth status.
+ * Top-level switcher gated by Redux auth status.
  *
- * - `unknown`        → Splash (session restore)
- * - `authenticated`  → AppNavigator only
- * - otherwise        → AuthNavigator only
- *
- * Conditional screen registration unmounts the inactive tree, which is the
- * React Navigation-recommended way to keep auth and app flows isolated.
+ * Renders exactly one tree at a time (Splash | App | Auth) — not as screens
+ * inside another native stack. Nesting native stacks under Fabric on Android
+ * has caused ScreenStack `Index out of bounds` / `addViewAt` crashes.
  */
 export function RootNavigator() {
   const authStatus = useAppSelector(selectAuthStatus);
@@ -34,31 +27,13 @@ export function RootNavigator() {
 
   return (
     <NavigationContainer theme={navigationTheme}>
-      <RootStack.Navigator
-        screenOptions={{
-          headerShown: false,
-          animation: 'fade',
-        }}>
-        {isRestoringSession ? (
-          <RootStack.Screen
-            name="Splash"
-            component={SplashScreen}
-            options={{animation: 'none'}}
-          />
-        ) : isAuthenticated ? (
-          <RootStack.Screen
-            name="App"
-            component={AppNavigator}
-            options={{animationTypeForReplace: 'push'}}
-          />
-        ) : (
-          <RootStack.Screen
-            name="Auth"
-            component={AuthNavigator}
-            options={{animationTypeForReplace: 'pop'}}
-          />
-        )}
-      </RootStack.Navigator>
+      {isRestoringSession ? (
+        <SplashScreen />
+      ) : isAuthenticated ? (
+        <AppNavigator />
+      ) : (
+        <AuthNavigator />
+      )}
     </NavigationContainer>
   );
 }
