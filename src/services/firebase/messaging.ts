@@ -32,13 +32,27 @@ export type FirebaseMessagingService = PushNotificationService;
 async function requestNotificationPermission(): Promise<boolean> {
   // Android 13+ POST_NOTIFICATIONS via Notifee; iOS via Messaging + Notifee.
   try {
-    const settings = await notifee.requestPermission();
+    const settings = await notifee.requestPermission({
+      sound: true,
+      announcement: true,
+      // iOS: allow alert/banner presentation (Notifee maps these options).
+      alert: true,
+      badge: true,
+      provisional: false,
+    });
     const notifeeOk =
       settings.authorizationStatus === NotifeeAuthorizationStatus.AUTHORIZED ||
       settings.authorizationStatus === NotifeeAuthorizationStatus.PROVISIONAL;
 
     if (Platform.OS === 'ios') {
-      const authStatus = await requestPermission(getMessaging());
+      const authStatus = await requestPermission(getMessaging(), {
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        provisional: false,
+        sound: true,
+      });
       const messagingOk =
         authStatus === AuthorizationStatus.AUTHORIZED ||
         authStatus === AuthorizationStatus.PROVISIONAL;

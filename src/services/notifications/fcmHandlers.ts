@@ -10,7 +10,11 @@ import {Platform} from 'react-native';
 import {TASK_REMINDERS_CHANNEL_ID} from '@features/notifications/services/taskReminderCoordinator';
 import {reportError} from '@utils/errors';
 
-const FCM_CHANNEL_ID = 'fcm-messages';
+/**
+ * HIGH-importance channel so Android shows a heads-up banner while the app
+ * is open. New id — Android does not upgrade importance on an existing channel.
+ */
+const FCM_CHANNEL_ID = 'fcm-alerts';
 
 async function ensureFcmChannel(): Promise<void> {
   if (Platform.OS !== 'android') {
@@ -19,8 +23,11 @@ async function ensureFcmChannel(): Promise<void> {
 
   await notifee.createChannel({
     id: FCM_CHANNEL_ID,
-    name: 'Messages',
-    importance: AndroidImportance.DEFAULT,
+    name: 'Alerts',
+    description: 'Push messages and updates',
+    importance: AndroidImportance.HIGH,
+    vibration: true,
+    sound: 'default',
   });
 }
 
@@ -49,8 +56,9 @@ function toNotifeeData(
 }
 
 /**
- * Displays a foreground FCM data/notification payload via Notifee.
- * Remote push delivery still requires Firebase Console / server setup.
+ * Displays a foreground (and background data) FCM payload via Notifee so a
+ * banner/heads-up appears while the app is open — the system does not show
+ * FCM `notification` payloads automatically in the foreground.
  */
 export async function displayRemoteMessage(
   remoteMessage: RemoteMessage,
@@ -74,11 +82,24 @@ export async function displayRemoteMessage(
     await notifee.displayNotification({
       id: remoteMessage.messageId ?? undefined,
       title,
-      body,
+      body: body || undefined,
       data: toNotifeeData(remoteMessage.data),
       android: {
         channelId: FCM_CHANNEL_ID,
+        importance: AndroidImportance.HIGH,
         pressAction: {id: 'default'},
+        sound: 'default',
+        onlyAlertOnce: false,
+      },
+      ios: {
+        sound: 'default',
+        // Required for banners while the app is in the foreground.
+        foregroundPresentationOptions: {
+          banner: true,
+          list: true,
+          sound: true,
+          badge: true,
+        },
       },
     });
   } catch (error) {
