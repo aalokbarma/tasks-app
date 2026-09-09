@@ -15,7 +15,7 @@ import {
   requireTaskUseCases,
 } from '@store/dependencies';
 import type {RootState} from '@store/rootReducer';
-import {toUserMessage} from '@utils/errors';
+import {reportError, toUserMessage} from '@utils/errors';
 
 function requireUserId(state: RootState): UniqueId {
   const userId = state.auth.user?.uid;
@@ -52,6 +52,7 @@ export const createTask = createAsyncThunk<
     await dispatch(refreshPendingSyncCount());
     return task;
   } catch (error) {
+    reportError('tasks/create', error);
     return rejectWithValue(toUserMessage(error, 'Failed to create task.'));
   }
 });

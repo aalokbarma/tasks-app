@@ -24,6 +24,14 @@ export function toUserMessage(error: unknown, fallback: string): string {
       return 'You must be signed in to continue.';
     }
 
+    if (
+      message.includes('database is not ready') ||
+      message.includes('local database') ||
+      message.includes('sqlite')
+    ) {
+      return 'Local storage is not ready yet. Force-quit the app and reopen it, then try again.';
+    }
+
     if (message.includes('network') || message.includes('offline')) {
       return 'Network problem. Check your connection and try again.';
     }

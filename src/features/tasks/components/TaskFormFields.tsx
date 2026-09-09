@@ -3,6 +3,7 @@ import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {TextField} from '@components/ui/TextField';
 import {useTheme} from '@theme/ThemeProvider';
 
+import {DueDatePickerField} from './DueDatePickerField';
 import type {TaskFormErrors, TaskFormValues} from '../utils/validateTaskForm';
 
 export interface TaskFormFieldsProps {
@@ -46,23 +47,21 @@ export function TaskFormFields({
         accessibilityLabel="Task description"
         placeholder="Optional notes"
       />
-      <TextField
-        label="Due date"
+
+      <DueDatePickerField
         value={values.dueDate}
-        onChangeText={dueDate =>
-          onChange({
-            dueDate,
-            remindOnDueDate: dueDate.trim() ? values.remindOnDueDate : false,
-          })
-        }
         error={errors.dueDate}
         editable={editable}
-        autoCapitalize="none"
-        autoCorrect={false}
-        keyboardType="numbers-and-punctuation"
-        placeholder="YYYY-MM-DD"
-        hint="Optional. Use year-month-day format."
-        accessibilityLabel="Due date"
+        onChange={dueDate =>
+          onChange({
+            dueDate,
+            remindOnDueDate: dueDate.trim()
+              ? values.dueDate.trim()
+                ? values.remindOnDueDate
+                : true
+              : false,
+          })
+        }
       />
 
       <Pressable
@@ -125,7 +124,9 @@ export function TaskFormFields({
               theme.typography.caption,
               {color: theme.colors.textSecondary},
             ]}>
-            Local notification — works offline. Permission is optional.
+            {reminderEnabled
+              ? 'Local notification — works offline. Permission is optional.'
+              : 'Pick a due date first to enable reminders.'}
           </Text>
         </View>
       </Pressable>

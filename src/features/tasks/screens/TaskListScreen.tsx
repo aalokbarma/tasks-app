@@ -144,8 +144,9 @@ export function TaskListScreen() {
   const emptyComponent = useMemo(
     () => (
       <EmptyState
+        eyebrow="Offline ready"
         title="No tasks yet"
-        description="Create a task anytime — even offline. Everything is saved on this device first."
+        description="Add your first task. It saves on this device immediately, then syncs when you’re online."
         actionLabel="Create task"
         onActionPress={handleCreate}
       />
@@ -208,5 +209,7 @@ const styles = StyleSheet.create({
   listContent: {},
   emptyListContent: {
     flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 24,
   },
 });

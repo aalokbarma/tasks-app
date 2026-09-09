@@ -1,8 +1,13 @@
 import type {CreateTaskInput, UpdateTaskInput} from '../types';
+import {
+  isBeforeLocalToday,
+  isValidCalendarDateString,
+} from '@utils/dateInput';
 
 export interface TaskFormValues {
   title: string;
   description: string;
+  /** Local calendar day as YYYY-MM-DD, or empty when unset. */
   dueDate: string;
   /** When true and due date is set, schedules a local reminder at due time. */
   remindOnDueDate: boolean;
@@ -12,8 +17,6 @@ export interface TaskFormErrors {
   title?: string;
   dueDate?: string;
 }
-
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 export function emptyTaskFormValues(): TaskFormValues {
   return {
@@ -38,22 +41,23 @@ export function taskToFormValues(task: {
   };
 }
 
+/**
+ * Parses YYYY-MM-DD into a noon-UTC ISO timestamp for storage/sync stability.
+ * Returns:
+ * - `null` when empty
+ * - `undefined` when invalid
+ */
 function parseDueDate(dueDate: string): string | null | undefined {
   const trimmed = dueDate.trim();
   if (!trimmed) {
     return null;
   }
 
-  if (!DATE_PATTERN.test(trimmed)) {
+  if (!isValidCalendarDateString(trimmed)) {
     return undefined;
   }
 
-  const parsed = new Date(`${trimmed}T12:00:00.000Z`);
-  if (Number.isNaN(parsed.getTime())) {
-    return undefined;
-  }
-
-  return parsed.toISOString();
+  return new Date(`${trimmed}T12:00:00.000Z`).toISOString();
 }
 
 export function validateTaskForm(
@@ -72,7 +76,14 @@ export function validateTaskForm(
 
   const dueAt = parseDueDate(values.dueDate);
   if (dueAt === undefined) {
-    errors.dueDate = 'Use YYYY-MM-DD for the due date.';
+    errors.dueDate = 'Choose a valid date from the calendar.';
+  } else if (
+    values.remindOnDueDate &&
+    values.dueDate.trim() &&
+    isBeforeLocalToday(values.dueDate.trim())
+  ) {
+    errors.dueDate =
+      'Reminders need today or a future date. Clear the reminder or pick another day.';
   }
 
   if (Object.keys(errors).length > 0) {

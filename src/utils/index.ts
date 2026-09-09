@@ -1,6 +1,13 @@
 export {createId} from './id';
 export {fromISODateString, toISODateString} from './date';
 export {
+  formatDueDateLabel,
+  isBeforeLocalToday,
+  isValidCalendarDateString,
+  parseDateInputValue,
+  toDateInputValue,
+} from './dateInput';
+export {
   reportError,
   reportWarning,
   toUserMessage,
